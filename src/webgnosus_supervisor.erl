@@ -24,7 +24,7 @@
 %% Description: Initialize server
 %%--------------------------------------------------------------------
 init([]) ->
-    %% Install tweeter error handler
+    %% Install alarm and event handler
      gen_event:swap_handler(alarm_handler, {alarm_handler, swap}, {webgnosus_alarm_handler, webgnosus}),
 
     {ok, {{one_for_one, 3, 10},
