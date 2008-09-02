@@ -19,10 +19,10 @@
 
 %%--------------------------------------------------------------------
 %% Function: init(Args) -> {ok, State}
-%% Description: Initiates the server
+%% Description: Initializes server
 %%--------------------------------------------------------------------
 init(Args) ->
-    io:format("*** tweeter_alarm_handler init:~p~n",[Args]),
+    io:format("*** webgnosus_alarm_handler init:~p~n",[Args]),
     {ok, 0}.
 
 %%--------------------------------------------------------------------
@@ -33,7 +33,7 @@ init(Args) ->
 %%--------------------------------------------------------------------
 handle_event({info_message, {}}, N) ->
     error_logger:info_msg("*** Tell the Engineer to turn on the fan~n"),
-    {ok, N+1};
+    {ok, N+1}.
     
     
 %%--------------------------------------------------------------------

@@ -10,7 +10,7 @@
 %% API
 -export([
          start_link/0,
-         timeline/0
+         public_timeline/0
         ]).
 
 %% gen_server callbacks
@@ -48,8 +48,8 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call(timeline, _From, State) ->  
-  {reply, fetch_timeline(), State}.
+handle_call(public_timeline, _From, State) ->  
+  {reply, fetch_public_timeline(), State}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -102,15 +102,15 @@ start_link() ->
 %% Description: get public timeline
 %%--------------------------------------------------------------------
 public_timeline() ->
-    gen_server:call(?MODULE, timeline).
+    gen_server:call(?MODULE, public_timeline).
 
 
 %%====================================================================
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: fetch_timeline() -> Result
+%% Func: fetch_public_timeline() -> Result
 %% Description: Convert process state when code is changed
 %%--------------------------------------------------------------------
-fetch_timeline() ->
+fetch_public_timeline() ->
     "the timeline".

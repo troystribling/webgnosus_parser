@@ -46,11 +46,11 @@ stop(_State) ->
 %%          {error, Reason}   
 %%--------------------------------------------------------------------
 start() ->
-    application:start(?MODULE).
+    application:start(webgnosus).
 
 %%--------------------------------------------------------------------
 %% Func: stop/0
 %% Returns: any 
 %%--------------------------------------------------------------------
 stop() ->
-    application:stop(?MODULE).
+    application:stop(webgnosus).
