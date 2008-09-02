@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% webgnosus alarm handler
 %%%-------------------------------------------------------------------
--module(webgnosus_alarm_handler).
+-module(webgnosus_event_handler).
 -behaviour(gen_event).
 
 %% gen_event callbacks
