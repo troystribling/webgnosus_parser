@@ -99,7 +99,7 @@ start_link() ->
 
 %%--------------------------------------------------------------------
 %% Func: public_timeline() -> Result
-%% Description: get public timeline
+%% Description: request public timeline from server
 %%--------------------------------------------------------------------
 public_timeline() ->
     gen_server:call(?MODULE, public_timeline).
@@ -110,7 +110,8 @@ public_timeline() ->
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: fetch_public_timeline() -> Result
-%% Description: Convert process state when code is changed
+%% Description: request puiblic time line from specified laconica
+%% server.
 %%--------------------------------------------------------------------
 fetch_public_timeline() ->
     "the timeline".

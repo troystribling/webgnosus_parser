@@ -10,7 +10,8 @@
          handle_event/2, 
          handle_call/2, 
 	 handle_info/2, 
-         terminate/2
+         terminate/2,
+         code_change/3
         ]).
 
 %%====================================================================
@@ -22,7 +23,7 @@
 %% Description: Initializes server
 %%--------------------------------------------------------------------
 init(Args) ->
-    io:format("*** webgnosus_alarm_handler init:~p~n",[Args]),
+    io:format("webgnosus_alarm_handler init:~p~n",[Args]),
     {ok, 0}.
 
 %%--------------------------------------------------------------------
@@ -32,13 +33,12 @@ init(Args) ->
 %% info messages
 %%--------------------------------------------------------------------
 handle_event({info_message, {}}, N) ->
-    error_logger:info_msg("*** Tell the Engineer to turn on the fan~n"),
+    error_logger:info_msg("INFO: message goes here."),
     {ok, N+1}.
-    
-    
+        
 %%--------------------------------------------------------------------
 %% Function: handle_call(_Request, N) -> {ok, N,  N}
-%% Description: handle server calls
+%% Description: call back on server requestes
 %%--------------------------------------------------------------------
 handle_call(_Request, N) -> _Reply = N, {ok, N,  N}.
 
@@ -53,3 +53,17 @@ handle_info(_Info, N) -> {ok, N}.
 %% Description: terminate event server
 %%--------------------------------------------------------------------
 terminate(_Reason, _N) -> ok.
+
+%%--------------------------------------------------------------------
+%% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
+%% Description: Convert process state when code is changed
+%%--------------------------------------------------------------------
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+%%====================================================================
+%% API
+%%====================================================================
+
+%%====================================================================
+%%% Internal functions
+%%====================================================================

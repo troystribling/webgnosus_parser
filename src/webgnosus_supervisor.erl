@@ -7,7 +7,6 @@
 
 %% api
 -export([
-         start/0,
          start_in_shell_for_testing/0
         ]).
 
@@ -47,14 +46,6 @@ start_link(Args) ->
 %%====================================================================
 %% API
 %%====================================================================
-%%--------------------------------------------------------------------
-%% Function: start()
-%% Description
-%%--------------------------------------------------------------------
-start() ->
-    spawn(fun() ->
-		  supervisor:start_link({local,?MODULE}, ?MODULE, _Arg = [])
-	  end).
 %%--------------------------------------------------------------------
 %% Function: start_in_shell_for_testing()
 %% Description: start supervsior and spawn workers when requested
