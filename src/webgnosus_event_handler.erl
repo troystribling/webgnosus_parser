@@ -32,11 +32,9 @@ init(Args) ->
 %%--------------------------------------------------------------------
 %% info messages
 %%--------------------------------------------------------------------
-handle_event({set_alarm, itBroke}, N) ->
-    {ok, N+1};
-
-handle_event({clear_alarm, itsFixed}, N) ->
-    {ok, N}.
+handle_event(X, N) ->
+    io:format("*** ~p~n",[X]),
+    {ok, N+1}.
         
 %%--------------------------------------------------------------------
 %% Function: handle_call(_Request, N) -> {ok, N,  N}
