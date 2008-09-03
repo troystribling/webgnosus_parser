@@ -2,7 +2,6 @@
 %%% webgnosus alarm handler
 %%%-------------------------------------------------------------------
 -module(webgnosus_event_handler).
--behaviour(gen_event).
 
 %% gen_event callbacks
 -export([
@@ -33,7 +32,7 @@ init(Args) ->
 %% info messages
 %%--------------------------------------------------------------------
 handle_event(X, N) ->
-    io:format("*** ~p~n",[X]),
+    io:format("JUNK ~p~n",[X]),
     {ok, N+1}.
         
 %%--------------------------------------------------------------------
