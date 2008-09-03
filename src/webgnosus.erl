@@ -25,13 +25,16 @@
 %% Returns: {ok, Pid}        |
 %%          {ok, Pid, State} |
 %%          {error, Reason}   
+%% Description: start called by application:start()
 %%--------------------------------------------------------------------
 start(_Type, StartArgs) ->
+    webgnosus_events:message({started, ?MODULE}),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------
 %% Func: stop/1
 %% Returns: any 
+%% Description: stop called by application:stop()
 %%--------------------------------------------------------------------
 stop(_State) ->
     ok.
@@ -44,6 +47,7 @@ stop(_State) ->
 %% Returns: {ok, Pid}        |
 %%          {ok, Pid, State} |
 %%          {error, Reason}   
+%% Description: start application
 %%--------------------------------------------------------------------
 start() ->
     application:start(webgnosus).
@@ -51,6 +55,7 @@ start() ->
 %%--------------------------------------------------------------------
 %% Func: stop/0
 %% Returns: any 
+%% Description: stop application
 %%--------------------------------------------------------------------
 stop() ->
     application:stop(webgnosus).

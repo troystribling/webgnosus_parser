@@ -36,7 +36,7 @@
 %%--------------------------------------------------------------------
 init([]) ->
     process_flag(trap_exit, true),
-    io:format("~p starting~n",[?MODULE]),
+    webgnosus_events:message({started, ?MODULE}),
     {ok, 0}.
 
 %%--------------------------------------------------------------------

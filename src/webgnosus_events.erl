@@ -1,67 +1,46 @@
 %%%-------------------------------------------------------------------
-%%% webgnosus alarm handler
+%%% webgnosus events
 %%%-------------------------------------------------------------------
--module(webgnosus_event_handler).
+-module(webgnosus_events).
 
-%% gen_event callbacks
+%% API
 -export([
-         init/1, 
-         handle_event/2, 
-         handle_call/2, 
-	 handle_info/2, 
-         terminate/2,
-         code_change/3
+         message/1,
+         warning/1,
+         alarm/1
         ]).
 
 %%====================================================================
-%% gen_event callbacks
-%%====================================================================
-
-%%--------------------------------------------------------------------
-%% Function: init(Args) -> {ok, State}
-%% Description: Initializes server
-%%--------------------------------------------------------------------
-init(Args) ->
-    io:format("webgnosus_alarm_handler init:~p~n",[Args]),
-    {ok, 0}.
-
-%%--------------------------------------------------------------------
-%% Function: handle_event(Msg, N) -> {ok, N}
-%% Description: handle events
-%%--------------------------------------------------------------------
-%% info messages
-%%--------------------------------------------------------------------
-handle_event(X, N) ->
-    io:format("JUNK ~p~n",[X]),
-    {ok, N+1}.
-        
-%%--------------------------------------------------------------------
-%% Function: handle_call(_Request, N) -> {ok, N,  N}
-%% Description: call back on server requestes
-%%--------------------------------------------------------------------
-handle_call(_Request, N) -> _Reply = N, {ok, N,  N}.
-
-%%--------------------------------------------------------------------
-%% Function: handle_info(_Info, N) -> {ok, N}
-%% Description: handle info requests
-%%--------------------------------------------------------------------
-handle_info(_Info, N) -> {ok, N}.
-
-%%--------------------------------------------------------------------
-%% Function: terminate(_Reason, _N)   -> ok
-%% Description: terminate event server
-%%--------------------------------------------------------------------
-terminate(_Reason, _N) -> ok.
-
-%%--------------------------------------------------------------------
-%% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
-%% Description: Convert process state when code is changed
-%%--------------------------------------------------------------------
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
-%%====================================================================
 %% API
 %%====================================================================
+%%--------------------------------------------------------------------
+%% Func: message/1
+%% Returns: ok
+%% Description: webgnosus messages written to error logger
+%%--------------------------------------------------------------------
+%% module start message
+message({started, M}) ->
+    error_logger:info_msg("starting module: ~p~n", [M]);
+
+%% handle any unspecified messages
+message(X) ->
+    error_logger:info_msg("~p~n", X).
+
+%%--------------------------------------------------------------------
+%% Func: warning/1
+%% Returns: ok
+%% Description: webgnosus warnings written to error logger
+%%--------------------------------------------------------------------
+warning(X) ->
+    error_logger:warning_msg("~p~n", X).
+
+%%--------------------------------------------------------------------
+%% Func: alarm/1
+%% Returns: ok
+%% Description: webgnosus alarms written to error logger
+%%--------------------------------------------------------------------
+alarm(X) ->
+    error_logger:error_msg("~p~n", X).
 
 %%====================================================================
 %%% Internal functions

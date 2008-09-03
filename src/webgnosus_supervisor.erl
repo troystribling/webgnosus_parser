@@ -24,6 +24,9 @@
 %% Description: Initialize server
 %%--------------------------------------------------------------------
 init([]) ->
+
+    webgnosus_events:message({started, ?MODULE}),
+    
     %% Install alarm and error_logger
      gen_event:swap_handler(alarm_handler, {alarm_handler, swap}, {webgnosus_alarm_handler, webgnosus_alarms}),
 
