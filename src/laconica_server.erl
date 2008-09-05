@@ -3,7 +3,7 @@
 %%% Description : fetch data from laconica microbolgging servers and pass to 
 %%%               analysis servers
 %%%-------------------------------------------------------------------
--module(laconica_interface).
+-module(laconica_server).
 
 -behaviour(gen_server).
 
