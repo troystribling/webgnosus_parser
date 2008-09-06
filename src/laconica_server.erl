@@ -37,7 +37,7 @@
 init([]) ->
     process_flag(trap_exit, true),
     webgnosus_events:message({started, ?MODULE}),
-    {ok, 0}.
+    {ok, []}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -48,8 +48,8 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call(public_timeline, _From, State) ->  
-  {reply, fetch_public_timeline(), State}.
+handle_call({open_session, Url}, _From, Sessions) ->  
+  {noreply, open_session(Url, Sessions)}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -77,7 +77,7 @@ handle_info(_Info, State) ->
 %% The return value is ignored.
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
-    io:format("~p stopping~n",[?MODULE]),
+    webgnosus_events:message({stopped, ?MODULE}),
     ok.
 
 %%--------------------------------------------------------------------
@@ -109,9 +109,9 @@ public_timeline() ->
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: fetch_public_timeline() -> Result
-%% Description: request puiblic time line from specified laconica
-%% server.
+%% Func: open_session() -> Result
+%% Description: open session to laconica server
 %%--------------------------------------------------------------------
-fetch_public_timeline() ->
-    "the timeline".
+open_session(Url, Sessions) ->
+    laconica_interface:start_link(Url)
+    [].

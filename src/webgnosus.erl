@@ -37,6 +37,7 @@ start(_Type, StartArgs) ->
 %% Description: stop called by application:stop()
 %%--------------------------------------------------------------------
 stop(_State) ->
+    webgnosus_events:message({stopped, ?MODULE}),
     ok.
 
 %%====================================================================
