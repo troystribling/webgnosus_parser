@@ -34,10 +34,10 @@
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-init([]) ->
+init(Url) ->
     process_flag(trap_exit, true),
     webgnosus_events:message({started, ?MODULE}),
-    {ok, 0}.
+    {ok, Url}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -48,8 +48,8 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call(public_timeline, _From, State) ->  
-  {reply, fetch_public_timeline(), State}.
+handle_call(public_timeline, _From, Session) ->  
+  {reply, fetch_public_timeline(Session), Session}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -94,8 +94,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link(Url) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, Url, []).
 
 %%--------------------------------------------------------------------
 %% Func: public_timeline() -> Result
@@ -115,3 +115,4 @@ public_timeline() ->
 %%--------------------------------------------------------------------
 fetch_public_timeline() ->
     "the timeline".
+
