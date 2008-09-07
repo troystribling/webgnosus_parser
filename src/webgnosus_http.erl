@@ -17,7 +17,7 @@
 %% Description: http get request to specified url.
 %%--------------------------------------------------------------------
 get_url(Url) ->
-    HTTPDoc = http:request(Url),
+    HTTPDoc = http:request(get, {Url, headers()}, [], []),
     case HTTPDoc of
         {ok, {_Status, _Headers, Body}} -> Body;
         _ -> {error}
@@ -40,6 +40,12 @@ build_url(Url, Params) ->
         )
     ),
     Url ++ "?" ++ ArgStr.
+
+%%--------------------------------------------------------------------
+%% Func: headers() -> Result
+%% Description: build request headers.
+%%--------------------------------------------------------------------
+headers() -> [{"User-Agent", "Webgnosus/0.0"}].
 
 %%====================================================================
 %%% Internal functions
