@@ -15,7 +15,8 @@
                ]},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  inets
                  ]},
   {mod, {webgnosus,[]}},
   {start_phases, []}

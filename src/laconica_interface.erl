@@ -9,7 +9,7 @@
 
 %% API
 -export([
-         start_link/0,
+         start_link/1,
          public_timeline/0
         ]).
 
@@ -113,6 +113,6 @@ public_timeline() ->
 %% Description: request puiblic time line from specified laconica
 %% server.
 %%--------------------------------------------------------------------
-fetch_public_timeline() ->
+fetch_public_timeline(Session) ->
     "the timeline".
 
