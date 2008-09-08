@@ -21,6 +21,8 @@
 %% module start message
 message({started, M}) ->
     error_logger:info_msg("starting module: ~p~n", [M]);
+message({started, M, Args}) ->
+    error_logger:info_msg("starting module: ~p~n~p~n", [M, Args]);
 
 %% module stop message
 message({stopped, M}) ->

@@ -23,7 +23,7 @@
 %% Description: Initializes server
 %%--------------------------------------------------------------------
 init(Args) ->
-    io:format("webgnosus_alarm_handler init:~p~n",[Args]),
+    webgnosus_events:message({started, ?MODULE, Args}),
     {ok, 0}.
 
 %%--------------------------------------------------------------------
