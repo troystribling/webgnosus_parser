@@ -28,7 +28,7 @@
 %% Description: start called by application:start()
 %%--------------------------------------------------------------------
 start(_Type, StartArgs) ->
-    webgnosus_events:message({started, ?MODULE}),
+%    webgnosus_events:message({started, ?MODULE}),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------

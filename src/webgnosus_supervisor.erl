@@ -25,18 +25,18 @@
 %%--------------------------------------------------------------------
 init([]) ->
 
-    webgnosus_events:message({started, ?MODULE}),
+%    webgnosus_events:message({started, ?MODULE}),
     
     %% Install alarm_handler
      gen_event:swap_handler(alarm_handler, {alarm_handler, swap}, {webgnosus_alarm_handler, webgnosus_alarms}),
 
     {ok, {{one_for_one, 3, 10},
 	  [{tag1, 
-	    {laconica_interface, start_link, []},
+	    {laconica_server, start_link, []},
 	    permanent, 
 	    10000, 
 	    worker, 
-	    [laconica_interface]}
+	    [laconica_server]}
 	  ]}}.
 
 %%--------------------------------------------------------------------

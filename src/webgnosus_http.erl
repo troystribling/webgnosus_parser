@@ -5,8 +5,7 @@
 
 %% API
 -export([
-         build_url/2,
-         get_url/1
+          get_url/1
         ]).
 
 %%====================================================================
@@ -22,24 +21,6 @@ get_url(Url) ->
         {ok, {_Status, _Headers, Body}} -> Body;
         _ -> {error}
     end.
-
-%%--------------------------------------------------------------------
-%% Func: build_url(Url, Args) -> Result
-%% Description: build request url.
-%%--------------------------------------------------------------------
-build_url(Url, []) -> Url;
-
-build_url(Url, Params) ->
-    ArgStr = lists:concat(
-        lists:foldl(
-            fun (Rec, []) -> [Rec];
-                (Rec, Ac) -> [Rec, "&" | Ac]
-            end,
-            [],
-            [K ++ "=" ++ V || {K, V} <- Params]
-        )
-    ),
-    Url ++ "?" ++ ArgStr.
 
 %%--------------------------------------------------------------------
 %% Func: headers() -> Result

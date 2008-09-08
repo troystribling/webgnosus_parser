@@ -113,4 +113,4 @@ public_timeline() ->
 %% Description: open session to laconica server
 %%--------------------------------------------------------------------
 open_session(Url, Sessions) ->
-    Sessions ++ [laconica_interface:start_link(Url)].
+    [laconica_interface:start_link(Url) | Sessions].

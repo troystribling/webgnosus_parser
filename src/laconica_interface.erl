@@ -3,7 +3,7 @@
 %%% Description : fetch data from laconica microbolgging servers and pass to 
 %%%               analysis servers
 %%%-------------------------------------------------------------------
--module(laconica_server).
+-module(laconica_interface).
 
 -behaviour(gen_server).
 
@@ -94,8 +94,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link(Url) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, Url, []).
+start_link(RootUrl) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, RootUrl, []).
 
 %%--------------------------------------------------------------------
 %% Func: public_timeline() -> Result
@@ -113,6 +113,6 @@ public_timeline() ->
 %% Description: request puiblic time line from specified laconica
 %% server.
 %%--------------------------------------------------------------------
-fetch_public_timeline(Session) ->
-    "the timeline".
+fetch_public_timeline(RootUrl) ->
+    webgnosus_http:get_url(RootUrl ++ "/statuses/public_timeline.xml").
 
