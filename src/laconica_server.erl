@@ -37,7 +37,6 @@
 %%--------------------------------------------------------------------
 init([]) ->
     process_flag(trap_exit, true),
-    inets:start(),
     webgnosus_events:message({started, ?MODULE}),
     {ok, []}.
 
@@ -52,8 +51,14 @@ init([]) ->
 %%--------------------------------------------------------------------
 %% open session with specified Url
 handle_call({open_session, Url}, _From, Sessions) ->  
-    {Status, Pid} = start_interface(Url),
-    {reply, Status, [Pid | Sessions]}.
+    {Status, Pid} = do_open_session(Url),
+    {reply, Status, [Pid | Sessions]};
+
+%%--------------------------------------------------------------------
+%% open session with specified Url
+handle_call(public_timeline, _From, Sessions) ->  
+    do_public_timeline(Sessions),
+    {reply, ok, Sessions}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -119,8 +124,15 @@ open_session(Url) ->
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: open_session() -> Result
-%% Description: open session to laconica server
+%% Func: do_open_session() -> Result
+%% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-start_interface(Url) ->
+do_open_session(Url) ->
     laconica_interface:start_link(Url).
+
+%%--------------------------------------------------------------------
+%% Func: do_public_timeline(Sessions) -> Result
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+do_public_timeline(Sessions) ->
+    io:fwrite("Sessions: ~p~n", [Sessions]).

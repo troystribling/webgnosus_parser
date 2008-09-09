@@ -27,6 +27,9 @@ init([]) ->
 
     webgnosus_events:message({started, ?MODULE}),
     
+    %% start inets swervices needed by http
+    inets:start(),
+
     %% Install alarm_handler
      gen_event:swap_handler(alarm_handler, {alarm_handler, swap}, {webgnosus_alarm_handler, webgnosus_alarms}),
 
