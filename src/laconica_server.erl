@@ -10,7 +10,8 @@
 %% API
 -export([
          start_link/0,
-         public_timeline/0
+         public_timeline/0,
+         open_session/1
         ]).
 
 %% gen_server callbacks
@@ -36,6 +37,7 @@
 %%--------------------------------------------------------------------
 init([]) ->
     process_flag(trap_exit, true),
+    inets:start(),
     webgnosus_events:message({started, ?MODULE}),
     {ok, []}.
 
@@ -48,8 +50,10 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
+%% open session with specified Url
 handle_call({open_session, Url}, _From, Sessions) ->  
-  {noreply, open_session(Url, Sessions)}.
+    {Status, Pid} = start_interface(Url),
+    {reply, Status, [Pid | Sessions]}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -104,6 +108,12 @@ start_link() ->
 public_timeline() ->
     gen_server:call(?MODULE, public_timeline).
 
+%%--------------------------------------------------------------------
+%% Func: open_session(Url) -> Result
+%% Description: request public timeline from server
+%%--------------------------------------------------------------------
+open_session(Url) ->
+    gen_server:call(?MODULE, {open_session, Url}).
 
 %%====================================================================
 %%% Internal functions
@@ -112,5 +122,5 @@ public_timeline() ->
 %% Func: open_session() -> Result
 %% Description: open session to laconica server
 %%--------------------------------------------------------------------
-open_session(Url, Sessions) ->
-    [laconica_interface:start_link(Url) | Sessions].
+start_interface(Url) ->
+    laconica_interface:start_link(Url).

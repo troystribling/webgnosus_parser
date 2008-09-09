@@ -34,10 +34,10 @@
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-init(Url) ->
+init(RootUrl) ->
     process_flag(trap_exit, true),
-    webgnosus_events:message({started, ?MODULE}),
-    {ok, Url}.
+    webgnosus_events:message({started, ?MODULE, RootUrl}),
+    {ok, RootUrl}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -48,8 +48,8 @@ init(Url) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call(public_timeline, _From, Session) ->  
-  {reply, fetch_public_timeline(Session), Session}.
+handle_call(public_timeline, _From, RootUrl) ->  
+  {reply, fetch_public_timeline(RootUrl), RootUrl}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -114,5 +114,5 @@ public_timeline() ->
 %% server.
 %%--------------------------------------------------------------------
 fetch_public_timeline(RootUrl) ->
-    webgnosus_http:get_url(RootUrl ++ "/statuses/public_timeline.xml").
+    webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
 
