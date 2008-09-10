@@ -57,8 +57,7 @@ handle_call({open_session, Url}, _From, Sessions) ->
 %%--------------------------------------------------------------------
 %% open session with specified Url
 handle_call(public_timeline, _From, Sessions) ->  
-    do_public_timeline(Sessions),
-    {reply, ok, Sessions}.
+    {reply, do_public_timeline(Sessions), Sessions}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -135,4 +134,8 @@ do_open_session(Url) ->
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_public_timeline(Sessions) ->
-    io:fwrite("Sessions: ~p~n", [Sessions]).
+    case length(Sessions) of
+      0 -> webgnosus_events:warning(["open_session before retrieving public timeline."]), error;
+      _ -> [gen_server:call(X, public_timeline)|| X <- Sessions], ok
+    end.
+      

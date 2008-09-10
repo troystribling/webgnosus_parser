@@ -49,7 +49,7 @@ init(RootUrl) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 handle_call(public_timeline, _From, RootUrl) ->  
-  {reply, fetch_public_timeline(RootUrl), RootUrl}.
+  {reply, get_public_timeline(RootUrl), RootUrl}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -95,15 +95,7 @@ code_change(_OldVsn, State, _Extra) ->
 %% Description: Starts the server
 %%--------------------------------------------------------------------
 start_link(RootUrl) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, RootUrl, []).
-
-%%--------------------------------------------------------------------
-%% Func: public_timeline() -> Result
-%% Description: request public timeline from server
-%%--------------------------------------------------------------------
-public_timeline() ->
-    gen_server:call(?MODULE, public_timeline).
-
+    gen_server:start_link(?MODULE, RootUrl, []).
 
 %%====================================================================
 %%% Internal functions
@@ -113,6 +105,6 @@ public_timeline() ->
 %% Description: request puiblic time line from specified laconica
 %% server.
 %%--------------------------------------------------------------------
-fetch_public_timeline(RootUrl) ->
+get_public_timeline(RootUrl) ->
     webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
 
