@@ -9,8 +9,7 @@
 
 %% API
 -export([
-         start_link/1,
-         public_timeline/0
+         start_link/1
         ]).
 
 %% gen_server callbacks
@@ -35,7 +34,6 @@
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init(RootUrl) ->
-    process_flag(trap_exit, true),
     webgnosus_events:message({started, ?MODULE, RootUrl}),
     {ok, RootUrl}.
 
@@ -105,6 +103,8 @@ start_link(RootUrl) ->
 %% Description: request puiblic time line from specified laconica
 %% server.
 %%--------------------------------------------------------------------
+%get_public_timeline(RootUrl) ->
+%    webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
+
 get_public_timeline(RootUrl) ->
     webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
-

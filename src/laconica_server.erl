@@ -36,7 +36,6 @@
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
-    process_flag(trap_exit, true),
     webgnosus_events:message({started, ?MODULE}),
     {ok, []}.
 
