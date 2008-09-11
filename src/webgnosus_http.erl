@@ -26,7 +26,21 @@ get_url(Url) ->
 %% Func: headers() -> Result
 %% Description: build request headers.
 %%--------------------------------------------------------------------
-headers() -> [{"User-Agent", "Webgnosus/0.0"}].
+headers() -> [{"User-Agent", "Webgnos.us/0.0"}].
+
+%%--------------------------------------------------------------------
+%% Func: parse_xml(Body) -> Result
+%% Description: parse xml document
+%%--------------------------------------------------------------------
+parse_xml(Document) ->
+    try xmerl_scan:string(Document) of 
+        Result ->
+            {Xml, _Rest} = Result, 
+            Xml
+    catch
+        {'EXIT', _} -> {error};
+        {error, _} -> {error}
+    end.
 
 %%====================================================================
 %%% Internal functions

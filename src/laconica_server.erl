@@ -135,6 +135,6 @@ do_open_session(Url) ->
 do_public_timeline(Sessions) ->
     case length(Sessions) of
       0 -> webgnosus_events:warning(["open_session before retrieving public timeline."]), error;
-      _ -> [gen_server:call(X, public_timeline)|| X <- Sessions], ok
+      _ -> [gen_server:call(X, public_timeline)|| X <- Sessions]
     end.
       

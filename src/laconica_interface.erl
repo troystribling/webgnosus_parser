@@ -107,4 +107,4 @@ start_link(RootUrl) ->
 %    webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
 
 get_public_timeline(RootUrl) ->
-    webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml").
+    webgnosus_http:parse_xml(webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml")).
