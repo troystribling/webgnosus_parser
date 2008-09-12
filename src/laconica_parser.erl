@@ -9,6 +9,7 @@
         ]).
 
 %% include
+-include_lib("laconica.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
 %%====================================================================
@@ -31,21 +32,17 @@ status(Node) ->
     Node.
 
 %%--------------------------------------------------------------------
-%% Func: statuses(Body) -> Result
-%% Description: extract data from records in xml document with 
-%%              statuses tag
+%% Func: extract_text(Body) -> Result
+%% Description: extract text field from xmlText object
 %%--------------------------------------------------------------------
-text_or_default(_, [], Default) -> Default;
-
-text_or_default(Xml, [Xpath | Tail], Default) ->
-    Res = lists:foldr(
+extract_text(Xml, Xpath) ->
+    lists:foldr(
         fun(#xmlText{value = Val}, Acc) -> lists:append(Val, Acc);
            (_, Acc) -> Acc
         end,
-        Default,
+        "",
         xmerl_xpath:string(Xpath, Xml)
-    ),
-    text_or_default(Xml, Tail, Res).
+    ).
 
 %%====================================================================
 %%% Internal functions
