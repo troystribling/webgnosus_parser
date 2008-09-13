@@ -23,27 +23,40 @@
 statuses(Body) ->
     [status(Node) || Node <- lists:flatten([xmerl_xpath:string("/statuses/status", Body)])].
 
+%%====================================================================
+%%% Internal functions
+%%====================================================================
 %%--------------------------------------------------------------------
 %% Func: status(Node) -> Result
 %% Description: extract data from records in xml document with 
 %%              tag status.
 %%--------------------------------------------------------------------
 status(Node) ->
-    Node.
-
+    Status = #status{
+        created_at            = extract_text("/status/created_at/text()", Node),
+        status_id             = extract_text("/status/id/text()", Node),
+        text                  = extract_text("/status/text/text()", Node),
+        source                = extract_text("/status/source/text()", Node),
+        truncated             = extract_text("/status/truncated/text()", Node),
+        in_reply_to_status_id = extract_text("/status/in_reply_to_status_id/text()", Node),
+        in_reply_to_user_id   = extract_text("/status/in_reply_to_user_id/text()", Node),
+        favorited             = extract_text("/status/favorited/text()", Node)
+    },
+    case xmerl_xpath:string("/status/user", Node) of
+        [] -> Status;
+        [UserNode] -> Status#status{user_id = extract_text("/user/id/text()", UserNode)}
+    end.
+    
 %%--------------------------------------------------------------------
 %% Func: extract_text(Body) -> Result
 %% Description: extract text field from xmlText object
 %%--------------------------------------------------------------------
-extract_text(Xml, Xpath) ->
+extract_text(Xpath, Xml) ->
     lists:foldr(
-        fun(#xmlText{value = Val}, Acc) -> lists:append(Val, Acc);
+        fun(#xmlText{value = Val}, Acc) -> [Val|Acc];
            (_, Acc) -> Acc
         end,
         "",
         xmerl_xpath:string(Xpath, Xml)
     ).
 
-%%====================================================================
-%%% Internal functions
-%%====================================================================
