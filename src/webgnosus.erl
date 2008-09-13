@@ -29,6 +29,7 @@
 %%--------------------------------------------------------------------
 start(_Type, StartArgs) ->
     webgnosus_events:message({started, ?MODULE, StartArgs}),
+    inets:start(),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------
