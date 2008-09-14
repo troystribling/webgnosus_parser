@@ -15,12 +15,15 @@
 %%====================================================================
 %% API
 %%====================================================================
+%%--------------------------------------------------------------------
+%% table methods
+%%--------------------------------------------------------------------
 %% Func: create_tables/0
 %% Returns: 
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    ok.
+    webnosus_dbi:create_table(laconica_site, [{attributes, record_info(fields, laconica_site)}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
@@ -28,7 +31,7 @@ create_table() ->
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    ok.
+    webnosus_dbi:delete_table(laconica_site).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
@@ -36,7 +39,11 @@ delete_table() ->
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    ok.
+    webnosus_dbi:clear_table(laconica_site).
+
+%%--------------------------------------------------------------------
+%% row methods
+%%--------------------------------------------------------------------
 
 %%====================================================================
 %%% Internal functions

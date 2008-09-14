@@ -34,6 +34,7 @@ start(_Type, StartArgs) ->
     webgnosus_events:message({started, ?MODULE, StartArgs}),
     inets:start(),
     menesia:start(),
+    menesia:wait_for_tables([laconica_sites], 20000),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------

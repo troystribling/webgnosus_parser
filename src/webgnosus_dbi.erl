@@ -5,9 +5,9 @@
 
 %% API
 -export([
-          create_table/0,
-          delete_table/0,
-          clear_table/0,
+          create_table/2,
+          delete_table/1,
+          clear_table/1,
           write/1,
           delete/1
        ]).
@@ -15,6 +15,9 @@
 %%====================================================================
 %% API
 %%====================================================================
+%%--------------------------------------------------------------------
+%% table methods
+%%--------------------------------------------------------------------
 %% Func: create_tables/0
 %% Returns: 
 %% Description: create application database tables
@@ -31,12 +34,41 @@ delete_table(Model) ->
     mnesia:delete_table(Model).
 
 %%--------------------------------------------------------------------
-%% Func: clear_tables/0
+%% Func: clear_tables/1
 %% Returns: 
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table(Model) ->
     mnesia:clear_table(Model).
+
+%%--------------------------------------------------------------------
+%% row methods
+%%--------------------------------------------------------------------
+%%--------------------------------------------------------------------
+%% Func: write_row/1
+%% Returns: 
+%% Description: write given record
+%%--------------------------------------------------------------------
+write_row(Row) ->
+    T = fun() ->
+        mnesisa:write(Row)
+    end,    
+    mnesia:transaction(T).
+
+%%--------------------------------------------------------------------
+%% Func: delete_row/1
+%% Returns: 
+%% Description: delete specified by Oid
+%%--------------------------------------------------------------------
+delete_row(Oid) ->
+    T = fun() ->
+        mnesisa:delete(Oid)
+    end,    
+    mnesia:transaction(T).
+
+%%--------------------------------------------------------------------
+%% query methods
+%%--------------------------------------------------------------------
 
 %%====================================================================
 %%% Internal functions

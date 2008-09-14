@@ -11,15 +11,15 @@
 %% laconica status message
 -record(laconica_status, 
     {
-        created_at, 
         status_id,
+        created_at, 
+        user_id,
         text,
         source,
         truncated, 
         in_reply_to_status_id, 
         in_reply_to_user_id, 
-        favorited, 
-        user_id
+        favorited 
     }
 ).
                
