@@ -50,10 +50,10 @@ clear_table(Model) ->
 %% Description: write given record
 %%--------------------------------------------------------------------
 write_row(Row) ->
-    T = fun() ->
-        mnesisa:write(Row)
-    end,    
-    mnesia:transaction(T).
+    mnesia:transaction(
+        fun() -> 
+            mnesisa:write(Row)
+        end).
 
 %%--------------------------------------------------------------------
 %% Func: delete_row/1
@@ -61,10 +61,10 @@ write_row(Row) ->
 %% Description: delete specified by Oid
 %%--------------------------------------------------------------------
 delete_row(Oid) ->
-    T = fun() ->
-        mnesisa:delete(Oid)
-    end,    
-    mnesia:transaction(T).
+    mnesia:transaction(
+        fun() ->
+            mnesisa:delete(Oid)
+        end).
 
 %%--------------------------------------------------------------------
 %% query methods

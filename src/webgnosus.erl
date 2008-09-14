@@ -77,6 +77,7 @@ stop() ->
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_tables() ->
+    laconica_site_model:create_tables(),
     ok.
 
 %%--------------------------------------------------------------------
@@ -85,6 +86,7 @@ create_tables() ->
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_tables() ->
+    laconica_site_model:delete_tables(),
     ok.
 
 %%--------------------------------------------------------------------
@@ -93,4 +95,5 @@ delete_tables() ->
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_tables() ->
+    laconica_site_model:clear_tables(),
     ok.
