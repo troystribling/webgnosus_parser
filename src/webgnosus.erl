@@ -33,8 +33,8 @@
 start(_Type, StartArgs) ->
     webgnosus_events:message({started, ?MODULE, StartArgs}),
     inets:start(),
-    menesia:start(),
-    menesia:wait_for_tables([laconica_sites], 20000),
+    mnesia:start(),
+    mnesia:wait_for_tables([laconica_sites], 20000),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------
@@ -44,7 +44,7 @@ start(_Type, StartArgs) ->
 %%--------------------------------------------------------------------
 stop(_State) ->
     inets:stop(),
-    menesia:stop(),
+    mnesia:stop(),
     webgnosus_events:message({stopped, ?MODULE}),
     ok.
 
@@ -77,7 +77,9 @@ stop() ->
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_tables() ->
-    laconica_site_model:create_tables(),
+    mnesia:start(),
+    laconica_site_model:create_table(),
+    mnesia:stop(),
     ok.
 
 %%--------------------------------------------------------------------
@@ -86,8 +88,10 @@ create_tables() ->
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_tables() ->
-    laconica_site_model:delete_tables(),
-    ok.
+   mnesia:start(),
+   laconica_site_model:delete_table(),
+   mnesia:stop(),
+   ok.
 
 %%--------------------------------------------------------------------
 %% Func: reset_tables/0
