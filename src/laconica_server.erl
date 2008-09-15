@@ -58,7 +58,7 @@ handle_call({open_session, Url, PollFrequency}, _From, Sessions) ->
     case Status of
         ok -> {reply, Status, add_session(Url, Pid, Sessions)};
         _  -> {reply, Status, Sessions}
-    end.
+    end;
 
 %%--------------------------------------------------------------------
 %% open session with specified Url

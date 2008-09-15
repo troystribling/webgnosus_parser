@@ -1,7 +1,7 @@
 %% laconica information model
 
 %% laconica site
--record(laconica_site, 
+-record(laconica_sites, 
     {
         root_url,
         poll_frequency
@@ -9,7 +9,7 @@
 ).
 
 %% laconica status message
--record(laconica_status, 
+-record(laconica_statuses, 
     {
         status_id,
         created_at, 
@@ -24,7 +24,7 @@
 ).
                
 %% laconica user
--record(laconica_user,
+-record(laconica_users,
     {
         user_id,
         user_name, 

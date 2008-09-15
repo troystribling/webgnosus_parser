@@ -34,6 +34,16 @@ task :run => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start")
 end
 
+desc "Open up a shell and run #{START_MODULE}:create_tables()" 
+task :run => [:create_tables] do
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables")
+end
+
+desc "Open up a shell and run #{START_MODULE}:delete_tables()" 
+task :run => [:delete_tables] do
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables")
+end
+
 desc "Generate Documentation"
 task :doc do
     sh("cd doc && erl -noshell -run edoc files ../#{SRC.join(" ../")} -run init stop")

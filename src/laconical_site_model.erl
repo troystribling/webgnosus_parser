@@ -62,7 +62,7 @@ write(_) ->
 %% Returns: 
 %% Description: delete specifie record to database
 %%--------------------------------------------------------------------
-write(Root_url) ->
+delete(Root_url) ->
     Oid = {laconica_site, Root_url},
     webnosus_dbi:delete_row(Oid).
 

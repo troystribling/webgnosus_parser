@@ -8,8 +8,8 @@
           create_table/2,
           delete_table/1,
           clear_table/1,
-          write/1,
-          delete/1
+          write_row/1,
+          delete_row/1
        ]).
 
 %%====================================================================
