@@ -18,7 +18,7 @@
 %%--------------------------------------------------------------------
 %% table methods
 %%--------------------------------------------------------------------
-%% Func: create_tables/0
+%% Func: create_table/2
 %% Returns: 
 %% Description: create application database tables
 %%--------------------------------------------------------------------
@@ -26,7 +26,7 @@ create_table(Model, Options) ->
     mnesia:create_table(Model, Options).
 
 %%--------------------------------------------------------------------
-%% Func: delete_tables/0
+%% Func: delete_table/1
 %% Returns: 
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
@@ -34,7 +34,7 @@ delete_table(Model) ->
     mnesia:delete_table(Model).
 
 %%--------------------------------------------------------------------
-%% Func: clear_tables/1
+%% Func: clear_table/1
 %% Returns: 
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
@@ -52,7 +52,7 @@ clear_table(Model) ->
 write_row(Row) ->
     mnesia:transaction(
         fun() -> 
-            mnesisa:write(Row)
+            mnesia:write(Row)
         end).
 
 %%--------------------------------------------------------------------
@@ -63,7 +63,7 @@ write_row(Row) ->
 delete_row(Oid) ->
     mnesia:transaction(
         fun() ->
-            mnesisa:delete(Oid)
+            mnesia:delete(Oid)
         end).
 
 %%--------------------------------------------------------------------

@@ -21,34 +21,38 @@ rule ".beam" =>  ["%{ebin,src}X.erl"] do |t|
   sh "erlc -pa ebin -W #{ERLC_FLAGS} -o ebin #{t.source}"
 end
 
-desc "Compile all"
+desc "compile all"
 task :compile => ['ebin'] + OBJ
 
-desc "Open up a shell"
+desc "open up a shell"
 task :shell => [:compile] do
     sh("erl -sname #{START_MODULE} -pa #{PWD}/ebin")
 end
 
-desc "Open up a shell and run #{START_MODULE}:start()" 
+desc "open up a shell and run #{START_MODULE}:start()" 
 task :run => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start")
 end
 
-desc "Open up a shell and run #{START_MODULE}:create_tables()" 
-task :run => [:create_tables] do
+desc "open up a shell and run #{START_MODULE}:create_tables()" 
+task :create_tables => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables")
 end
 
-desc "Open up a shell and run #{START_MODULE}:delete_tables()" 
-task :run => [:delete_tables] do
+desc "open up a shell and run #{START_MODULE}:delete_tables()" 
+task :delete_tables => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables")
 end
 
-desc "Generate Documentation"
+desc "open up a shell and run #{START_MODULE}:delete_tables()" 
+task :clear_tables => [:compile] do
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} clear_tables")
+end
+
+desc "generate Documentation"
 task :doc do
     sh("cd doc && erl -noshell -run edoc files ../#{SRC.join(" ../")} -run init stop")
 end
-
 
 task :default => :compile
 

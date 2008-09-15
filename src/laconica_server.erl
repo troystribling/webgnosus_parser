@@ -142,7 +142,7 @@ open_session(Url, PollFrequency) ->
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_open_session(Url, PollFrequency) ->
-    laconica_site_model:write(#laconica_site{root_url = Url, poll_frequency = PollFrequency}),
+    laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}),
     laconica_interface:start_link(Url).
 
 %%--------------------------------------------------------------------

@@ -34,7 +34,11 @@ start(_Type, StartArgs) ->
     webgnosus_events:message({started, ?MODULE, StartArgs}),
     inets:start(),
     mnesia:start(),
-    mnesia:wait_for_tables([laconica_sites], 20000),
+    case mnesia:wait_for_tables([laconica_sites], 20000) of
+        {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
+        {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
+        _ -> webgnosus_events:message({started, "mnesia"}) 
+    end,
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------
@@ -78,8 +82,9 @@ stop() ->
 %%--------------------------------------------------------------------
 create_tables() ->
     mnesia:start(),
-    laconica_site_model:create_table(),
+    do_create_tables(),
     mnesia:stop(),
+    init:stop(),
     ok.
 
 %%--------------------------------------------------------------------
@@ -89,8 +94,9 @@ create_tables() ->
 %%--------------------------------------------------------------------
 delete_tables() ->
    mnesia:start(),
-   laconica_site_model:delete_table(),
+   do_delete_tables(),
    mnesia:stop(),
+   init:stop(),
    ok.
 
 %%--------------------------------------------------------------------
@@ -99,5 +105,35 @@ delete_tables() ->
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_tables() ->
-    laconica_site_model:clear_tables(),
-    ok.
+   mnesia:start(),
+   do_clear_tables(),
+   mnesia:stop(),
+   init:stop(),
+   ok.
+    
+%%====================================================================
+%%% Internal functions
+%%====================================================================
+%%--------------------------------------------------------------------
+%% Func: do_create_tables/0
+%% Returns: 
+%% Description: create application tables
+%%--------------------------------------------------------------------
+do_create_tables() ->
+    laconica_site_model:create_table().
+    
+%%--------------------------------------------------------------------
+%% Func: do_delete_tables/0
+%% Returns: 
+%% Description: delete application tables
+%%--------------------------------------------------------------------
+do_delete_tables() ->
+    laconica_site_model:delete_table().
+    
+%%--------------------------------------------------------------------
+%% Func: do_clear_tables/0
+%% Returns: 
+%% Description: clear application tables
+%%--------------------------------------------------------------------
+do_clear_tables() ->
+    laconica_site_model:clear_tables().

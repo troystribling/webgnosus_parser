@@ -26,7 +26,7 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webnosus_dbi:create_table(laconica_site, [{attributes, record_info(fields, laconica_site)}]).
+    webgnosus_dbi:create_table(laconica_sites, [{attributes, record_info(fields, laconica_sites)}, {disc_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
@@ -34,7 +34,7 @@ create_table() ->
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    webnosus_dbi:delete_table(laconica_site).
+    webgnosus_dbi:delete_table(laconica_sites).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
@@ -42,7 +42,7 @@ delete_table() ->
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    webnosus_dbi:clear_table(laconica_site).
+    webgnosus_dbi:clear_table(laconica_sites).
 
 %%--------------------------------------------------------------------
 %% row methods
@@ -52,8 +52,8 @@ clear_table() ->
 %% Returns: 
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
-write(R) when is_record(R, laconica_site) ->
-    webnosus_dbi:write_row(R);
+write(R) when is_record(R, laconica_sites) ->
+    webgnosus_dbi:write_row(R);
 write(_) ->
     {atomic, error}.
 
@@ -63,8 +63,8 @@ write(_) ->
 %% Description: delete specifie record to database
 %%--------------------------------------------------------------------
 delete(Root_url) ->
-    Oid = {laconica_site, Root_url},
-    webnosus_dbi:delete_row(Oid).
+    Oid = {laconica_sites, Root_url},
+    webgnosus_dbi:delete_row(Oid).
 
 %%====================================================================
 %%% Internal functions

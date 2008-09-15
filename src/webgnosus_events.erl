@@ -37,6 +37,15 @@ message(X) ->
 %% Returns: ok
 %% Description: webgnosus warnings written to error logger
 %%--------------------------------------------------------------------
+%% mnesia timeout
+warning({mnesia_start_timeout, T}) ->
+    error_logger:warning_msg("mnesia timeout waiting for tables: ~p~n", T);
+
+%% mnesia start error
+warning({mnesia_start_error, R}) ->
+    error_logger:warning_msg("mnesia start error: ~p~n", [R]);
+
+%% handle any unspecified messages
 warning(X) ->
     error_logger:warning_msg("~p~n", X).
 
@@ -45,6 +54,7 @@ warning(X) ->
 %% Returns: ok
 %% Description: webgnosus alarms written to error logger
 %%--------------------------------------------------------------------
+%% handle any unspecified messages
 alarm(X) ->
     error_logger:error_msg("~p~n", X).
 
