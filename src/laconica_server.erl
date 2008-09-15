@@ -55,11 +55,10 @@ init([]) ->
 %% open session with specified Url
 handle_call({open_session, Url, PollFrequency}, _From, Sessions) ->  
     {Status, Pid} = do_open_session(Url, PollFrequency),
-    NewSessions =  case gb_trees:is_defined(Url, Sessions) of
-        true -> Sessions;
-        false -> gb_trees:insert(Url, Pid, Sessions)
-    end,
-    {reply, Status, NewSessions};
+    case Status of
+        ok -> {reply, Status, add_session(Url, Pid, Sessions)};
+        _  -> {reply, Status, Sessions}
+    end.
 
 %%--------------------------------------------------------------------
 %% open session with specified Url
@@ -143,7 +142,7 @@ open_session(Url, PollFrequency) ->
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_open_session(Url, PollFrequency) ->
-    Site = #laconica_site{},
+    laconica_site_model:write(#laconica_site{root_url = Url, poll_frequency = PollFrequency}),
     laconica_interface:start_link(Url).
 
 %%--------------------------------------------------------------------
@@ -151,8 +150,18 @@ do_open_session(Url, PollFrequency) ->
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_public_timeline(Sessions) ->
-    case length(Sessions) of
+    SessionList = gb_trees:to_list(Sessions),
+    case length(SessionList) of
       0 -> webgnosus_events:warning(["open_session before retrieving public timeline."]), error;
-      _ -> [gen_server:call(X, public_timeline)|| X <- Sessions]
+      _ -> [gen_server:call(Pid, public_timeline)|| {_Url, Pid} <- SessionList]
     end.
       
+%%--------------------------------------------------------------------
+%% Func: add_session(Sessions) -> Result
+%% Description: add session to session hash
+%%--------------------------------------------------------------------
+add_session(Url, Pid, Sessions) ->
+    case gb_trees:is_defined(Url, Sessions) of
+        true -> Sessions;
+        false -> gb_trees:insert(Url, Pid, Sessions)
+    end.
