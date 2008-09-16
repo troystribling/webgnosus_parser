@@ -41,9 +41,7 @@
 %%--------------------------------------------------------------------
 init([]) ->
     webgnosus_events:message({started, ?MODULE}),
-    Sessions = gb_trees:empty(),
-    [spawn_session(Site, Sessions) || Site <- laconica_site_model:find(all)],
-    {ok, Sessions}.
+    {ok, spawn_sessions(laconica_site_model:find(all), gb_trees:empty())}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -154,8 +152,13 @@ do_public_timeline(Sessions) ->
 %% Func: spawn_session/2
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-spawn_session({laconica_sites, Url, PollFrequency}, Sessions) ->
-    spawn_session(Url, PollFrequency, Sessions).
+spawn_sessions([], Sessions) -> 
+    Sessions;
+
+spawn_sessions([Site|Sites], Sessions) ->
+    {laconica_sites, Url, PollFrequency} = Site,
+    {reply, _Status, UpdatedSessions} = spawn_session(Url, PollFrequency, Sessions),
+    spawn_sessions(Sites, UpdatedSessions).
 
 %%--------------------------------------------------------------------
 %% Func: spawn_session/3
