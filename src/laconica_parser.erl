@@ -27,7 +27,7 @@ statuses(Body) ->
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: status(Node) -> Result
+%% Func: status/1
 %% Description: extract data from records in xml document with 
 %%              tag status.
 %%--------------------------------------------------------------------
@@ -48,7 +48,7 @@ status(Node) ->
     end.
     
 %%--------------------------------------------------------------------
-%% Func: extract_text(Body) -> Result
+%% Func: extract_text/1
 %% Description: extract text field from xmlText object
 %%--------------------------------------------------------------------
 extract_text(Xpath, Xml) ->

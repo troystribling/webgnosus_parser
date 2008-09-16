@@ -41,7 +41,9 @@
 %%--------------------------------------------------------------------
 init([]) ->
     webgnosus_events:message({started, ?MODULE}),
-    {ok, gb_trees:empty()}.
+    Sessions = gb_trees:empty(),
+    [spawn_session(Site, Sessions) || Site <- laconica_site_model:find(all)],
+    {ok, Sessions}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -54,13 +56,11 @@ init([]) ->
 %%--------------------------------------------------------------------
 %% open session with specified Url and poll frequency
 handle_call({open_session, Url, PollFrequency}, _From, Sessions) ->  
-    {Status, Pid} = spawn_session(Url, PollFrequency),
-    open_session_response(Status, Url, Pid, Sessions);
+    do_open_session(Url, PollFrequency, Sessions);
 
 %% open session with specified Url and no poll frequency
 handle_call({open_session, Url}, _From, Sessions) ->  
-    {Status, Pid} = spawn_session(Url, 0),
-    open_session_response(Status, Url, Pid, Sessions);
+    do_open_session(Url, 0, Sessions);
     
 %%--------------------------------------------------------------------
 %% get public timeline
@@ -114,14 +114,14 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
-%% Func: public_timeline() -> Result
+%% Func: public_timeline/0
 %% Description: request public timeline from server
 %%--------------------------------------------------------------------
 public_timeline() ->
     gen_server:call(?MODULE, public_timeline).
 
 %%--------------------------------------------------------------------
-%% Func: open_session(Url) -> Result
+%% Func: open_session/1
 %% Description: open session to laconica server at Url and set poll
 %%              frequency of public timeline to 1 second
 %%--------------------------------------------------------------------
@@ -129,7 +129,7 @@ open_session(Url) ->
     gen_server:call(?MODULE, {open_session, Url}).
 
 %%--------------------------------------------------------------------
-%% Func: open_session(Url, Poll_frequency) -> Result
+%% Func: open_session/2
 %% Description: request public timeline from server, set poll
 %%              default to 1 second
 %%--------------------------------------------------------------------
@@ -140,36 +140,56 @@ open_session(Url, PollFrequency) ->
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: do_open_session() -> Result
-%% Description: spawn laconica server interface process
-%%--------------------------------------------------------------------
-spawn_session(Url, PollFrequency) ->
-    laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}),
-    laconica_interface:start_link(Url).
-
-%%--------------------------------------------------------------------
-%% Func: do_public_timeline(Sessions) -> Result
+%% Func: do_public_timeline/1
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_public_timeline(Sessions) ->
     SessionList = gb_trees:to_list(Sessions),
     case length(SessionList) of
-      0 -> webgnosus_events:warning(["open_session before retrieving public timeline."]), error;
+      0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
       _ -> [gen_server:call(Pid, public_timeline)|| {_Url, Pid} <- SessionList]
     end.
 
 %%--------------------------------------------------------------------
-%% Func: open_session_response(Sessions) -> Result
-%% Description: cintsruct open_session response
+%% Func: spawn_session/2
+%% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-open_session_response(Status, Url, Pid, Sessions) ->
+spawn_session({laconica_sites, Url, PollFrequency}, Sessions) ->
+    spawn_session(Url, PollFrequency, Sessions).
+
+%%--------------------------------------------------------------------
+%% Func: spawn_session/3
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+spawn_session(Url, _PollFrequency, Sessions) ->
+    {Status, Pid} = laconica_interface:start_link(Url),
     case Status of
         ok -> {reply, Status, add_session(Url, Pid, Sessions)};
         _  -> {reply, Status, Sessions}
     end.
 
 %%--------------------------------------------------------------------
-%% Func: add_session(Sessions) -> Result
+%% Func: do_open_session/0
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+do_open_session(Url, PollFrequency, Sessions) ->
+    Response = spawn_session(Url, PollFrequency, Sessions),
+    write_site(Response, Url, PollFrequency),
+    Response.
+
+%%--------------------------------------------------------------------
+%% Func: write_site/0
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
+    if
+        Status =:= ok -> 
+            laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency})
+    end.
+
+
+%%--------------------------------------------------------------------
+%% Func: add_session/1
 %% Description: add session to session hash
 %%--------------------------------------------------------------------
 add_session(Url, Pid, Sessions) ->

@@ -9,11 +9,13 @@
           delete_table/0,
           clear_table/0,
           write/1,
-          delete/1
+          delete/1,
+          find/1
        ]).
 
 %% include
 -include_lib("laconica_model.hrl").
+-include_lib("stdlib/include/qlc.hrl").
 
 %%====================================================================
 %% API
@@ -22,7 +24,6 @@
 %% table methods
 %%--------------------------------------------------------------------
 %% Func: create_tables/0
-%% Returns: 
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
@@ -30,7 +31,6 @@ create_table() ->
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
-%% Returns: 
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
@@ -38,7 +38,6 @@ delete_table() ->
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
-%% Returns: 
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
@@ -49,7 +48,6 @@ clear_table() ->
 %%--------------------------------------------------------------------
 %%--------------------------------------------------------------------
 %% Func: write/1
-%% Returns: 
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
 write(R) when is_record(R, laconica_sites) ->
@@ -59,12 +57,19 @@ write(_) ->
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
-%% Returns: 
 %% Description: delete specifie record to database
 %%--------------------------------------------------------------------
 delete(Root_url) ->
     Oid = {laconica_sites, Root_url},
     webgnosus_dbi:delete_row(Oid).
+
+%%--------------------------------------------------------------------
+%% Func: find/1
+%% Description: find models
+%%--------------------------------------------------------------------
+%% find all models
+find(all) ->
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_sites)])).
 
 %%====================================================================
 %%% Internal functions

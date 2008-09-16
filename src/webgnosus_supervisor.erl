@@ -50,7 +50,7 @@ start_link(Args) ->
 %% API
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Function: start_in_shell_for_testing()
+%% Function: start_in_shell_for_testing/0
 %% Description: start supervsior and spawn workers when requested
 %% from erl shell.
 %%--------------------------------------------------------------------
