@@ -19,7 +19,6 @@
 %% table methods
 %%--------------------------------------------------------------------
 %% Func: create_table/2
-%% Returns: 
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table(Model, Options) ->
@@ -27,7 +26,6 @@ create_table(Model, Options) ->
 
 %%--------------------------------------------------------------------
 %% Func: delete_table/1
-%% Returns: 
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table(Model) ->
@@ -35,7 +33,6 @@ delete_table(Model) ->
 
 %%--------------------------------------------------------------------
 %% Func: clear_table/1
-%% Returns: 
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table(Model) ->
@@ -46,7 +43,6 @@ clear_table(Model) ->
 %%--------------------------------------------------------------------
 %%--------------------------------------------------------------------
 %% Func: write_row/1
-%% Returns: 
 %% Description: write given record
 %%--------------------------------------------------------------------
 write_row(Row) ->
@@ -57,7 +53,6 @@ write_row(Row) ->
 
 %%--------------------------------------------------------------------
 %% Func: delete_row/1
-%% Returns: 
 %% Description: delete specified by Oid
 %%--------------------------------------------------------------------
 delete_row(Oid) ->

@@ -27,7 +27,7 @@
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% Function: init(Args) -> {ok, State} |
+%% Function: init(Args) -> {ok, State}          |
 %%                         {ok, State, Timeout} |
 %%                         ignore               |
 %%                         {stop, Reason}
@@ -39,10 +39,10 @@ init(RootUrl) ->
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
-%%                                      {reply, Reply, State, Timeout} |
-%%                                      {noreply, State} |
-%%                                      {noreply, State, Timeout} |
-%%                                      {stop, Reason, Reply, State} |
+%%                                      {reply, Reply, State, Timeout}     |
+%%                                      {noreply, State}                   |
+%%                                      {noreply, State, Timeout}          |
+%%                                      {stop, Reason, Reply, State}       |
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
@@ -50,7 +50,7 @@ handle_call(public_timeline, _From, RootUrl) ->
   {reply, get_public_timeline(RootUrl), RootUrl}.
 
 %%--------------------------------------------------------------------
-%% Function: handle_cast(Msg, State) -> {noreply, State} |
+%% Function: handle_cast(Msg, State) -> {noreply, State}          |
 %%                                      {noreply, State, Timeout} |
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
@@ -59,7 +59,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
-%% Function: handle_info(Info, State) -> {noreply, State} |
+%% Function: handle_info(Info, State) -> {noreply, State}          |
 %%                                       {noreply, State, Timeout} |
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages

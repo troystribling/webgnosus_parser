@@ -15,7 +15,6 @@
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: message/1
-%% Returns: ok
 %% Description: webgnosus messages written to error logger
 %%--------------------------------------------------------------------
 %% module start message
@@ -34,7 +33,6 @@ message(X) ->
 
 %%--------------------------------------------------------------------
 %% Func: warning/1
-%% Returns: ok
 %% Description: webgnosus warnings written to error logger
 %%--------------------------------------------------------------------
 %% mnesia timeout
@@ -51,7 +49,6 @@ warning(X) ->
 
 %%--------------------------------------------------------------------
 %% Func: alarm/1
-%% Returns: ok
 %% Description: webgnosus alarms written to error logger
 %%--------------------------------------------------------------------
 %% handle any unspecified messages

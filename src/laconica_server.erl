@@ -33,7 +33,7 @@
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% Function: init(Args) -> {ok, State} |
+%% Function: init(Args) -> {ok, State}          |
 %%                         {ok, State, Timeout} |
 %%                         ignore               |
 %%                         {stop, Reason}
@@ -45,28 +45,30 @@ init([]) ->
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
-%%                                      {reply, Reply, State, Timeout} |
-%%                                      {noreply, State} |
-%%                                      {noreply, State, Timeout} |
-%%                                      {stop, Reason, Reply, State} |
+%%                                      {reply, Reply, State, Timeout}     |
+%%                                      {noreply, State}                   |
+%%                                      {noreply, State, Timeout}          |
+%%                                      {stop, Reason, Reply, State}       |
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-%% open session with specified Url
+%% open session with specified Url and poll frequency
 handle_call({open_session, Url, PollFrequency}, _From, Sessions) ->  
-    {Status, Pid} = do_open_session(Url, PollFrequency),
-    case Status of
-        ok -> {reply, Status, add_session(Url, Pid, Sessions)};
-        _  -> {reply, Status, Sessions}
-    end;
+    {Status, Pid} = spawn_session(Url, PollFrequency),
+    open_session_response(Status, Url, Pid, Sessions);
 
+%% open session with specified Url and no poll frequency
+handle_call({open_session, Url}, _From, Sessions) ->  
+    {Status, Pid} = spawn_session(Url, 0),
+    open_session_response(Status, Url, Pid, Sessions);
+    
 %%--------------------------------------------------------------------
-%% open session with specified Url
+%% get public timeline
 handle_call(public_timeline, _From, Sessions) ->  
     {reply, do_public_timeline(Sessions), Sessions}.
 
 %%--------------------------------------------------------------------
-%% Function: handle_cast(Msg, State) -> {noreply, State} |
+%% Function: handle_cast(Msg, State) -> {noreply, State}          |
 %%                                      {noreply, State, Timeout} |
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
@@ -75,7 +77,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %%--------------------------------------------------------------------
-%% Function: handle_info(Info, State) -> {noreply, State} |
+%% Function: handle_info(Info, State) -> {noreply, State}          |
 %%                                       {noreply, State, Timeout} |
 %%                                       {stop, Reason, State}
 %% Description: Handling all non call/cast messages
@@ -124,7 +126,7 @@ public_timeline() ->
 %%              frequency of public timeline to 1 second
 %%--------------------------------------------------------------------
 open_session(Url) ->
-    gen_server:call(?MODULE, {open_session, Url, 0}).
+    gen_server:call(?MODULE, {open_session, Url}).
 
 %%--------------------------------------------------------------------
 %% Func: open_session(Url, Poll_frequency) -> Result
@@ -141,7 +143,7 @@ open_session(Url, PollFrequency) ->
 %% Func: do_open_session() -> Result
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-do_open_session(Url, PollFrequency) ->
+spawn_session(Url, PollFrequency) ->
     laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}),
     laconica_interface:start_link(Url).
 
@@ -155,7 +157,17 @@ do_public_timeline(Sessions) ->
       0 -> webgnosus_events:warning(["open_session before retrieving public timeline."]), error;
       _ -> [gen_server:call(Pid, public_timeline)|| {_Url, Pid} <- SessionList]
     end.
-      
+
+%%--------------------------------------------------------------------
+%% Func: open_session_response(Sessions) -> Result
+%% Description: cintsruct open_session response
+%%--------------------------------------------------------------------
+open_session_response(Status, Url, Pid, Sessions) ->
+    case Status of
+        ok -> {reply, Status, add_session(Url, Pid, Sessions)};
+        _  -> {reply, Status, Sessions}
+    end.
+
 %%--------------------------------------------------------------------
 %% Func: add_session(Sessions) -> Result
 %% Description: add session to session hash
