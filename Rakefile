@@ -3,6 +3,7 @@ require 'rake/clean'
 
 # Configuration
 START_MODULE = "webgnosus"
+MNESIA_DIR   = "/home/troy/mnesia/webgnosus"
 
 
 # No Need to change
@@ -26,27 +27,27 @@ task :compile => ['ebin'] + OBJ
 
 desc "open up a shell"
 task :shell => [:compile] do
-    sh("erl -sname #{START_MODULE} -pa #{PWD}/ebin")
+    sh("erl -sname #{START_MODULE} -pa #{PWD}/ebin -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:start()" 
 task :run => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start")
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:create_tables()" 
 task :create_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables")
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:delete_tables()" 
 task :delete_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables")
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:delete_tables()" 
 task :clear_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} clear_tables")
+    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} clear_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "generate Documentation"

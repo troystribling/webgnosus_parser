@@ -34,11 +34,7 @@ start(_Type, StartArgs) ->
     webgnosus_events:message({started, ?MODULE, StartArgs}),
     inets:start(),
     mnesia:start(),
-    case mnesia:wait_for_tables([laconica_sites], 20000) of
-        {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
-        {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
-        _ -> webgnosus_events:message({started, "mnesia"}) 
-    end,
+    wait_for_tables(),
     webgnosus_supervisor:start_link(StartArgs).
 
 %%--------------------------------------------------------------------
@@ -94,6 +90,7 @@ create_tables() ->
 %%--------------------------------------------------------------------
 delete_tables() ->
    mnesia:start(),
+   wait_for_tables(),
    do_delete_tables(),
    mnesia:stop(),
    init:stop(),
@@ -137,3 +134,15 @@ do_delete_tables() ->
 %%--------------------------------------------------------------------
 do_clear_tables() ->
     laconica_site_model:clear_tables().
+
+%%--------------------------------------------------------------------
+%% Func: wait_for_tables/0
+%% Returns: 
+%% Description: wait for tables to initialize
+%%--------------------------------------------------------------------
+wait_for_tables() ->
+    case mnesia:wait_for_tables([laconica_sites], 20000) of
+        {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
+        {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
+        _ -> webgnosus_events:message({started, "mnesia"}) 
+    end.
