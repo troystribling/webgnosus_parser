@@ -43,8 +43,6 @@ start(_Type, StartArgs) ->
 %% Description: stop called by application:stop()
 %%--------------------------------------------------------------------
 stop(_State) ->
-    inets:stop(),
-    mnesia:stop(),
     webgnosus_events:message({stopped, ?MODULE}),
     ok.
 
@@ -144,5 +142,5 @@ wait_for_tables() ->
     case mnesia:wait_for_tables([laconica_sites], 20000) of
         {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
         {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
-        _ -> webgnosus_events:message({started, "mnesia"}) 
+        _ -> webgnosus_events:message({started, mnesia}) 
     end.

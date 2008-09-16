@@ -124,7 +124,7 @@ public_timeline() ->
 %%              frequency of public timeline to 1 second
 %%--------------------------------------------------------------------
 open_session(Url) ->
-    gen_server:call(?MODULE, {open_session, Url, 1}).
+    gen_server:call(?MODULE, {open_session, Url, 0}).
 
 %%--------------------------------------------------------------------
 %% Func: open_session(Url, Poll_frequency) -> Result
