@@ -58,11 +58,15 @@ status(Node) ->
 %% Description: extract text field from xmlText object
 %%--------------------------------------------------------------------
 extract_text(Xpath, Xml) ->
-    lists:foldr(
-        fun(#xmlText{value = Val}, Acc) -> [Val|Acc];
-           (_, Acc) -> Acc
+
+    Text = lists:foldr(
+        fun(#xmlText{value = V}, A) -> [V|A];
+             (_, A)                 -> A
         end,
         "",
         xmerl_xpath:string(Xpath, Xml)
-    ).
-
+    ),
+    case Text of
+        [T] -> T;
+         _  -> lists:concat(Text)
+    end.

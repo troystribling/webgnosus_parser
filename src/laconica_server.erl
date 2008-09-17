@@ -186,7 +186,7 @@ spawn_session(Url, _PollFrequency, Sessions) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: do_open_session/0
+%% Func: do_open_session/3
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_open_session(Url, PollFrequency, Sessions) ->
@@ -195,7 +195,7 @@ do_open_session(Url, PollFrequency, Sessions) ->
     Response.
 
 %%--------------------------------------------------------------------
-%% Func: do_close_session/0
+%% Func: do_close_session/2
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_close_session(Url, Sessions) ->
@@ -209,7 +209,7 @@ do_close_session(Url, Sessions) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: write_site/0
+%% Func: write_site/3
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
@@ -219,7 +219,7 @@ write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: add_session/1
+%% Func: add_session/3
 %% Description: add session to session hash
 %%--------------------------------------------------------------------
 add_session(Url, Pid, Sessions) ->

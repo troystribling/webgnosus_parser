@@ -104,28 +104,34 @@ clear_tables() ->
 %% Description: create application tables
 %%--------------------------------------------------------------------
 do_create_tables() ->
-    laconica_site_model:create_table().
+    laconica_site_model:create_table(),
+    laconica_status_model:create_table(),
+    laconica_user_model:create_table().
     
 %%--------------------------------------------------------------------
 %% Func: do_delete_tables/0
 %% Description: delete application tables
 %%--------------------------------------------------------------------
 do_delete_tables() ->
-    laconica_site_model:delete_table().
+    laconica_site_model:delete_table(),
+    laconica_status_model:delete_table(),
+    laconica_user_model:delete_table().
     
 %%--------------------------------------------------------------------
 %% Func: do_clear_tables/0
 %% Description: clear application tables
 %%--------------------------------------------------------------------
 do_clear_tables() ->
-    laconica_site_model:clear_tables().
+    laconica_site_model:clear_tables(),
+    laconica_status_model:clear_tables(),
+    laconica_user_model:clear_tables().
 
 %%--------------------------------------------------------------------
 %% Func: wait_for_tables/0
 %% Description: wait for tables to initialize
 %%--------------------------------------------------------------------
 wait_for_tables() ->
-    case mnesia:wait_for_tables([laconica_sites], 20000) of
+    case mnesia:wait_for_tables([laconica_sites, laconica_statuses, laconica_users], 20000) of
         {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
         {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
         _ -> webgnosus_events:message({started, mnesia}) 
