@@ -47,7 +47,11 @@ warning({mnesia_start_error, M}) ->
 
 %% mnesia start error
 warning({session_not_found, M}) ->
-    error_logger:warning_msg("session close error not found: ", [M]);
+    error_logger:warning_msg("session close error not found: ~p~n", [M]);
+
+%% http get error
+warning({http_get_failed, M}) ->
+    error_logger:warning_msg("http get failed for: ~p~n", [M]);
 
 %% handle any unspecified messages
 warning(X) ->

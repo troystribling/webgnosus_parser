@@ -40,7 +40,7 @@ parse_xml(Document) ->
             Xml
     catch
         {'EXIT', _} -> {error};
-        {error, _} -> {error}
+        {error, _}  -> {error}
     end.
 
 %%====================================================================

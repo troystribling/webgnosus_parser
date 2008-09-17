@@ -5,7 +5,7 @@
 
 %% API
 -export([
-          statuses/1
+          statuses/2
         ]).
 
 %% include
@@ -20,8 +20,8 @@
 %% Description: extract data from records in xml document with 
 %%              tag statuses.
 %%--------------------------------------------------------------------
-statuses(Body) ->
-    [status(Node) || Node <- lists:flatten([xmerl_xpath:string("/statuses/status", Body)])].
+statuses(Body, SiteUrl) ->
+    [status(Node, SiteUrl) || Node <- lists:flatten([xmerl_xpath:string("/statuses/status", Body)])].
 
 %%====================================================================
 %%% Internal functions
@@ -31,11 +31,12 @@ statuses(Body) ->
 %% Description: extract data from records in xml document with 
 %%              tag status.
 %%--------------------------------------------------------------------
-status(Node) ->
+status(Node, SiteUrl) ->
     StatusId = extract_text("/status/id/text()", Node),
     Status = #laconica_statuses{
         created_at            = extract_text("/status/created_at/text()", Node),
         status_id             = StatusId,
+        site                  = SiteUrl,
         text                  = extract_text("/status/text/text()", Node),
         source                = extract_text("/status/source/text()", Node),
         truncated             = extract_text("/status/truncated/text()", Node),
@@ -49,7 +50,7 @@ status(Node) ->
             UserId = extract_text("/user/id/text()", UserNode),
             Status#laconica_statuses{
                 user_id   = UserId,
-                status_id = {StatusId, UserId}
+                status_id = {StatusId, UserId, SiteUrl}
             }
     end.
     
@@ -58,10 +59,9 @@ status(Node) ->
 %% Description: extract text field from xmlText object
 %%--------------------------------------------------------------------
 extract_text(Xpath, Xml) ->
-
     Text = lists:foldr(
         fun(#xmlText{value = V}, A) -> [V|A];
-             (_, A)                 -> A
+                             (_, A) -> A
         end,
         "",
         xmerl_xpath:string(Xpath, Xml)

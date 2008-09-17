@@ -181,7 +181,7 @@ spawn_sessions([Site|Sites], Sessions) ->
 spawn_session(Url, _PollFrequency, Sessions) ->
     {Status, Pid} = laconica_interface:start_link(Url),
     case Status of
-        ok -> {reply, Status, add_session(Url, Pid, Sessions)};
+        ok -> {reply, Status, gb_trees:insert(Url, Pid, Sessions)};
         _  -> {reply, Status, Sessions}
     end.
 
@@ -190,9 +190,14 @@ spawn_session(Url, _PollFrequency, Sessions) ->
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
 do_open_session(Url, PollFrequency, Sessions) ->
-    Response = spawn_session(Url, PollFrequency, Sessions),
-    write_site(Response, Url, PollFrequency),
-    Response.
+    case gb_trees:is_defined(Url, Sessions) of
+        false ->
+            Response = spawn_session(Url, PollFrequency, Sessions),
+            write_site(Response, Url, PollFrequency),
+            Response;
+        true -> {reply, ok, Sessions}
+    end.
+                
 
 %%--------------------------------------------------------------------
 %% Func: do_close_session/2
@@ -216,14 +221,4 @@ write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
     if
         Status =:= ok -> 
             laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency})
-    end.
-
-%%--------------------------------------------------------------------
-%% Func: add_session/3
-%% Description: add session to session hash
-%%--------------------------------------------------------------------
-add_session(Url, Pid, Sessions) ->
-    case gb_trees:is_defined(Url, Sessions) of
-        true -> Sessions;
-        false -> gb_trees:insert(Url, Pid, Sessions)
     end.

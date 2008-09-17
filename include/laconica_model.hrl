@@ -12,6 +12,7 @@
 -record(laconica_statuses, 
     {
         status_id,
+        site,
         created_at, 
         user_id,
         text,
@@ -27,6 +28,7 @@
 -record(laconica_users,
     {
         user_id,
+        site,
         user_name, 
         screen_name, 
         location, 
