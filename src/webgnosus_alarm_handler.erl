@@ -23,7 +23,7 @@
 %% Description: Initializes server
 %%--------------------------------------------------------------------
 init(Args) ->
-    webgnosus_events:message({started, ?MODULE, Args}),
+    webgnosus_events:message({started, {?MODULE, Args}}),
     {ok, 0}.
 
 %%--------------------------------------------------------------------

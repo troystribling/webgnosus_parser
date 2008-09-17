@@ -34,7 +34,8 @@
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init(RootUrl) ->
-    webgnosus_events:message({started, ?MODULE, RootUrl}),
+    process_flag(trap_exit, true),
+    webgnosus_events:message({started, {?MODULE, RootUrl, self()}}),
     {ok, RootUrl}.
 
 %%--------------------------------------------------------------------
@@ -46,6 +47,7 @@ init(RootUrl) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
+%% get public timeline
 handle_call(public_timeline, _From, RootUrl) ->  
   {reply, get_public_timeline(RootUrl), RootUrl}.
 
@@ -74,8 +76,8 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %%--------------------------------------------------------------------
-terminate(_Reason, _State) ->
-    webgnosus_events:message({started, ?MODULE}),
+terminate(Reason, State) ->
+    webgnosus_events:message({stopped, {?MODULE, self(), Reason, State}}),
     ok.
 
 %%--------------------------------------------------------------------
@@ -104,4 +106,5 @@ start_link(RootUrl) ->
 %% server.
 %%--------------------------------------------------------------------
 get_public_timeline(RootUrl) ->
+    webgnosus_events:message({public_timeline, RootUrl}),
     laconica_parser:statuses(webgnosus_http:parse_xml(webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml"))).

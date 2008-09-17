@@ -12,7 +12,8 @@
          start_link/0,
          public_timeline/0,
          open_session/1,
-         open_session/2
+         open_session/2,
+         close_session/1
         ]).
 
 %% gen_server callbacks
@@ -40,7 +41,7 @@
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
-    webgnosus_events:message({started, ?MODULE}),
+    webgnosus_events:message({started, {?MODULE, self()}}),
     {ok, spawn_sessions(laconica_site_model:find(all), gb_trees:empty())}.
 
 %%--------------------------------------------------------------------
@@ -59,7 +60,12 @@ handle_call({open_session, Url, PollFrequency}, _From, Sessions) ->
 %% open session with specified Url and no poll frequency
 handle_call({open_session, Url}, _From, Sessions) ->  
     do_open_session(Url, 0, Sessions);
-    
+
+%%--------------------------------------------------------------------
+%% close session with specified Url
+handle_call({close_session, Url}, _From, Sessions) ->  
+    do_close_session(Url, Sessions);
+
 %%--------------------------------------------------------------------
 %% get public timeline
 handle_call(public_timeline, _From, Sessions) ->  
@@ -128,11 +134,18 @@ open_session(Url) ->
 
 %%--------------------------------------------------------------------
 %% Func: open_session/2
-%% Description: request public timeline from server, set poll
-%%              default to 1 second
+%% Description: request public timeline from server and do not 
+%%              poll server
 %%--------------------------------------------------------------------
 open_session(Url, PollFrequency) ->
     gen_server:call(?MODULE, {open_session, Url, PollFrequency}).
+
+%%--------------------------------------------------------------------
+%% Func: close_session/1
+%% Description: close session to laconica server at Url 
+%%--------------------------------------------------------------------
+close_session(Url) ->
+    gen_server:call(?MODULE, {close_session, Url}).
 
 %%====================================================================
 %%% Internal functions
@@ -181,6 +194,20 @@ do_open_session(Url, PollFrequency, Sessions) ->
     Response.
 
 %%--------------------------------------------------------------------
+%% Func: do_close_session/0
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+do_close_session(Url, Sessions) ->
+    case gb_trees:is_defined(Url, Sessions) of
+      true ->  Pid  = gb_trees:get(Url, Sessions),
+               exit(Pid, normal),
+               laconica_site_model:delete(Url),
+               {reply, ok, gb_trees:delete(Url, Sessions)};
+      false -> webgnosus_events:warning({session_not_found, Url}), 
+               {reply, error, Sessions}
+    end.
+
+%%--------------------------------------------------------------------
 %% Func: write_site/0
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
@@ -189,7 +216,6 @@ write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
         Status =:= ok -> 
             laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency})
     end.
-
 
 %%--------------------------------------------------------------------
 %% Func: add_session/1

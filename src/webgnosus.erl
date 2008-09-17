@@ -31,7 +31,7 @@
 %% Description: start called by application:start()
 %%--------------------------------------------------------------------
 start(_Type, StartArgs) ->
-    webgnosus_events:message({started, ?MODULE, StartArgs}),
+    webgnosus_events:message({started, {?MODULE, StartArgs}}),
     inets:start(),
     mnesia:start(),
     wait_for_tables(),

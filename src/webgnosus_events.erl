@@ -20,12 +20,14 @@
 %% module start message
 message({started, M}) ->
     error_logger:info_msg("starting module: ~p~n", [M]);
-message({started, M, Args}) ->
-    error_logger:info_msg("starting module: ~p~n~p~n", [M, Args]);
 
 %% module stop message
 message({stopped, M}) ->
     error_logger:info_msg("stopping module: ~p~n", [M]);
+
+%% retrived public timeline
+message({public_timeline, Url}) ->
+    error_logger:info_msg("Retrieved public timeline for: ~p~n", [Url]);
 
 %% handle any unspecified messages
 message(X) ->
@@ -40,8 +42,12 @@ warning({mnesia_start_timeout, T}) ->
     error_logger:warning_msg("mnesia timeout waiting for tables: ~p~n", T);
 
 %% mnesia start error
-warning({mnesia_start_error, R}) ->
-    error_logger:warning_msg("mnesia start error: ~p~n", [R]);
+warning({mnesia_start_error, M}) ->
+    error_logger:warning_msg("mnesia start error: ~p~n", [M]);
+
+%% mnesia start error
+warning({session_not_found, M}) ->
+    error_logger:warning_msg("session close error not found: ", [M]);
 
 %% handle any unspecified messages
 warning(X) ->
