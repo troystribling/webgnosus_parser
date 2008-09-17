@@ -107,4 +107,8 @@ start_link(RootUrl) ->
 %%--------------------------------------------------------------------
 get_public_timeline(RootUrl) ->
     webgnosus_events:message({public_timeline, RootUrl}),
-    laconica_parser:statuses(webgnosus_http:parse_xml(webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml"))).
+    laconica_parser:statuses(
+        webgnosus_http:parse_xml(
+            webgnosus_http:get_url(RootUrl ++ "/api/statuses/public_timeline.xml")
+        )
+    ).

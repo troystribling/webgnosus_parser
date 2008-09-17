@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
-%%% model interface for laconica site
+%%% model interface for laconica status
 %%%-------------------------------------------------------------------
--module(laconica_site_model).
+-module(laconica_status_model).
 
 %% API
 -export([
@@ -27,21 +27,21 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(laconica_sites, [{attributes, record_info(fields, laconica_sites)}, {disc_copies, [node()]}]).
+    webgnosus_dbi:create_table(laconica_statuses, [{attributes, record_info(fields, laconica_statuses)}, {disc_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    webgnosus_dbi:delete_table(laconica_sites).
+    webgnosus_dbi:delete_table(laconica_statuses).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    webgnosus_dbi:clear_table(laconica_sites).
+    webgnosus_dbi:clear_table(laconica_statuses).
 
 %%--------------------------------------------------------------------
 %% row methods
@@ -50,7 +50,7 @@ clear_table() ->
 %% Func: write/1
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
-write(R) when is_record(R, laconica_sites) ->
+write(R) when is_record(R, laconica_statuses) ->
     webgnosus_dbi:write_row(R);
 write(_) ->
     {atomic, error}.
@@ -59,8 +59,8 @@ write(_) ->
 %% Func: delete/1
 %% Description: delete specifie record to database
 %%--------------------------------------------------------------------
-delete(RootUrl) ->
-    Oid = {laconica_sites, RootUrl},
+delete({StatusId, UserId}) ->
+    Oid = {laconica_statuses, {StatusId, UserId}},
     webgnosus_dbi:delete_row(Oid).
 
 %%--------------------------------------------------------------------
@@ -69,7 +69,7 @@ delete(RootUrl) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_sites)])).
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_statuses)])).
 
 %%====================================================================
 %%% Internal functions

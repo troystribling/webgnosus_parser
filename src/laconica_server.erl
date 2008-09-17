@@ -41,6 +41,7 @@
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
+    process_flag(trap_exit, true),
     webgnosus_events:message({started, {?MODULE, self()}}),
     {ok, spawn_sessions(laconica_site_model:find(all), gb_trees:empty())}.
 
@@ -96,8 +97,8 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %%--------------------------------------------------------------------
-terminate(_Reason, _State) ->
-    webgnosus_events:message({stopped, ?MODULE}),
+terminate(Reason, _State) ->
+    webgnosus_events:message({stopped, {?MODULE, self(), Reason}}),
     ok.
 
 %%--------------------------------------------------------------------

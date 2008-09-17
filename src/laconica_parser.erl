@@ -32,9 +32,10 @@ statuses(Body) ->
 %%              tag status.
 %%--------------------------------------------------------------------
 status(Node) ->
+    StatusId = extract_text("/status/id/text()", Node),
     Status = #laconica_statuses{
         created_at            = extract_text("/status/created_at/text()", Node),
-        status_id             = extract_text("/status/id/text()", Node),
+        status_id             = StatusId,
         text                  = extract_text("/status/text/text()", Node),
         source                = extract_text("/status/source/text()", Node),
         truncated             = extract_text("/status/truncated/text()", Node),
@@ -44,7 +45,12 @@ status(Node) ->
     },
     case xmerl_xpath:string("/status/user", Node) of
         [] -> Status;
-        [UserNode] -> Status#laconica_statuses{user_id = extract_text("/user/id/text()", UserNode)}
+        [UserNode] -> 
+            UserId = extract_text("/user/id/text()", UserNode),
+            Status#laconica_statuses{
+                user_id   = UserId,
+                status_id = {StatusId, UserId}
+            }
     end.
     
 %%--------------------------------------------------------------------

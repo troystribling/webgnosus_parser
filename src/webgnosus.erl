@@ -72,7 +72,6 @@ stop() ->
 create_tables() ->
     mnesia:start(),
     do_create_tables(),
-    mnesia:stop(),
     init:stop(),
     ok.
 
@@ -84,7 +83,6 @@ delete_tables() ->
    mnesia:start(),
    wait_for_tables(),
    do_delete_tables(),
-   mnesia:stop(),
    init:stop(),
    ok.
 
@@ -95,7 +93,6 @@ delete_tables() ->
 clear_tables() ->
    mnesia:start(),
    do_clear_tables(),
-   mnesia:stop(),
    init:stop(),
    ok.
     
