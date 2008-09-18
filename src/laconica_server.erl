@@ -159,7 +159,7 @@ do_public_timeline(Sessions) ->
     SessionList = gb_trees:to_list(Sessions),
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
-      _ -> [gen_server:call(Pid, public_timeline)|| {_Url, Pid} <- SessionList]
+      _ -> [gen_server:call(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
     end.
 
 %%--------------------------------------------------------------------
@@ -178,11 +178,14 @@ spawn_sessions([Site|Sites], Sessions) ->
 %% Func: spawn_session/3
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-spawn_session(Url, _PollFrequency, Sessions) ->
-    {Status, Pid} = laconica_interface:start_link(Url),
-    case Status of
-        ok -> {reply, Status, gb_trees:insert(Url, Pid, Sessions)};
-        _  -> {reply, Status, Sessions}
+spawn_session(Url, PollFrequency, Sessions) ->
+    {InterfaceStatus, InterfacePid} = laconica_interface:start_link(Url),
+    if
+        PollFrequency == 0 ->
+            {reply, InterfaceStatus, gb_trees:insert(Url, {InterfacePid, 0}, Sessions)};
+        true ->
+            {_CollectorStatus, CollectorPid} = laconica_collector:start_link({InterfacePid, PollFrequency}),
+            {reply, InterfaceStatus, gb_trees:insert(Url, {InterfacePid, CollectorPid}, Sessions)}
     end.
 
 %%--------------------------------------------------------------------
@@ -193,7 +196,7 @@ do_open_session(Url, PollFrequency, Sessions) ->
     case gb_trees:is_defined(Url, Sessions) of
         false ->
             Response = spawn_session(Url, PollFrequency, Sessions),
-            write_site(Response, Url, PollFrequency),
+            write_site(Url, PollFrequency),
             Response;
         true -> {reply, ok, Sessions}
     end.
@@ -217,8 +220,5 @@ do_close_session(Url, Sessions) ->
 %% Func: write_site/3
 %% Description: spawn laconica server interface process
 %%--------------------------------------------------------------------
-write_site({reply, Status, _Sessions}, Url, PollFrequency) ->
-    if
-        Status =:= ok -> 
-            laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency})
-    end.
+write_site(Url, PollFrequency) ->
+    laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}).
