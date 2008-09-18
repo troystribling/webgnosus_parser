@@ -113,7 +113,9 @@ get_public_timeline(RootUrl) ->
                 webgnosus_events:warning({http_get_failed, Path}),
                 error;
             Doc ->
-                [laconica_status_model:write(S) || S <- laconica_parser:statuses(webgnosus_http:parse_xml(Doc), RootUrl)],
+                ParsedDoc = webgnosus_http:parse_xml(Doc),
+                [laconica_status_model:write(S) || S <- laconica_parser:statuses(ParsedDoc, RootUrl)],
+                [laconica_user_model:write(U)   || U <- laconica_parser:status_users(ParsedDoc, RootUrl)],
                 ok
     end.
         

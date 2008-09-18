@@ -5,7 +5,8 @@
 
 %% API
 -export([
-          statuses/2
+          statuses/2,
+          status_users/2
         ]).
 
 %% include
@@ -17,19 +18,25 @@
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: statuses(Body) -> Result
-%% Description: extract data from records in xml document with 
-%%              tag statuses.
+%% Description: extract status message.
 %%--------------------------------------------------------------------
 statuses(Body, SiteUrl) ->
     [status(Node, SiteUrl) || Node <- lists:flatten([xmerl_xpath:string("/statuses/status", Body)])].
+
+%%--------------------------------------------------------------------
+%% Func: statuses(Body) -> Result
+%% Description: extract user information from status message.
+%%--------------------------------------------------------------------
+status_users(Body, SiteUrl) ->
+    [status_user(Node, SiteUrl) || Node <- lists:flatten([xmerl_xpath:string("/statuses/status", Body)])].
 
 %%====================================================================
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: status/1
-%% Description: extract data from records in xml document with 
-%%              tag status.
+%% Func: status/2
+%% Description: extract status data from status records in xml 
+%%              document.
 %%--------------------------------------------------------------------
 status(Node, SiteUrl) ->
     StatusId = extract_text("/status/id/text()", Node),
@@ -50,9 +57,29 @@ status(Node, SiteUrl) ->
             UserId = extract_text("/user/id/text()", UserNode),
             Status#laconica_statuses{
                 user_id   = UserId,
+                user_name = extract_text("/user/name/text()", UserNode),
                 status_id = {StatusId, UserId, SiteUrl}
             }
     end.
+    
+%%--------------------------------------------------------------------
+%% Func: status_user/2
+%% Description: extract user data from status records in xml document with 
+%%              tag status.
+%%--------------------------------------------------------------------
+status_user(Node, SiteUrl) ->
+    [UserNode] = xmerl_xpath:string("/status/user", Node),
+    #laconica_users{
+        user_id           = {extract_text("/user/id/text()", UserNode), SiteUrl},
+        user_name         = extract_text("/user/name/text()", UserNode),
+        followers_count   = extract_text("/user/followers_count/text()", UserNode),
+        screen_name       = extract_text("/user/screen_name/text()", UserNode),
+        description       = extract_text("/user/description/text()", UserNode),
+        location          = extract_text("/user/location/text()", UserNode),
+        profile_image_url = extract_text("/user/profile_image_url/text()", UserNode),
+        protected         = extract_text("/user/protected/text()", UserNode),
+        url               = extract_text("/user/url/text()", UserNode)
+    }.
     
 %%--------------------------------------------------------------------
 %% Func: extract_text/1

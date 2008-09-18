@@ -72,11 +72,11 @@ handle_call({close_session, Url}, _From, Sessions) ->
 %%--------------------------------------------------------------------
 %% stop collectors
 handle_call(stop_collectors, _From, Sessions) ->  
-    do_collectors_request(stop_collector, Sessions);
+    do_collectors_request(stop_collection, Sessions);
 
 %% start collectors
 handle_call(start_collectors, _From, Sessions) ->  
-    do_collectors_request(start_collector, Sessions);
+    do_collectors_request(start_collection, Sessions);
 
 %%--------------------------------------------------------------------
 %% get public timeline
@@ -226,7 +226,8 @@ do_collectors_request(Msg, Sessions) ->
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session."]), error;
       _ -> [send_collector_message(CollectorPid, Msg)|| {_Url, {_InterfacePid, CollectorPid}} <- SessionList]
-    end.
+    end,
+    {reply, ok, Sessions}.
 
 %%====================================================================
 %%% Internal functions
@@ -237,7 +238,7 @@ do_collectors_request(Msg, Sessions) ->
 %%--------------------------------------------------------------------
 send_collector_message(Pid, Msg) ->
     case Pid of
-      -1 -> ok;
+      -1 -> void;
        _ -> gen_server:cast(Pid, Msg)
     end.
 

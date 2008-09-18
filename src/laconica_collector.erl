@@ -61,11 +61,13 @@ handle_cast(collect, State) ->
 
 %% start collecting data from laconica server
 handle_cast(start_collection, {Pid, PollFrequency, _Collect}) ->  
-    {reply, start, {Pid, PollFrequency, true}};
+    webgnosus_events:message({start_collection, Pid}),
+    {noreply, {Pid, PollFrequency, true}};
 
 %% stop collecting data from laconica server
 handle_cast(stop_collection, {Pid, PollFrequency, _Collect}) ->  
-    {reply, stop, {Pid, PollFrequency, false}}.
+    webgnosus_events:message({stop_collection, Pid}),
+    {noreply, {Pid, PollFrequency, false}}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_info(Info, State) -> {noreply, State}          |
@@ -115,13 +117,12 @@ do_collection({Pid, PollFrequency, Collect}) ->
     case Collect of 
         true ->
             webgnosus_events:message({collection, Pid}),
-            gen_server:call(Pid, public_timeline),
-            timer:sleep(PollFrequency * 1000),
-            gen_server:cast(self(), collect),
-            {noreply, {Pid, PollFrequency, true}};
+            gen_server:call(Pid, public_timeline);
         false -> 
-            {noreply, {Pid, PollFrequency, false}}
-    end.
-        
-    
+            void
+    end,
+    timer:sleep(PollFrequency * 1000),
+    gen_server:cast(self(), collect),
+    {noreply, {Pid, PollFrequency, Collect}}.
+           
     

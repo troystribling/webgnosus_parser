@@ -29,9 +29,17 @@ message({stopped, M}) ->
 message({public_timeline, Url}) ->
     error_logger:info_msg("retrieved public timeline for: ~p~n", [Url]);
 
-%% retrived public timeline
+%% performed collection for pid
 message({collection, Pid}) ->
     error_logger:info_msg("collecting pid: ~p~n", [Pid]);
+
+%% stoped collection
+message({stop_collection, Pid}) ->
+    error_logger:info_msg("stopped collecting pid: ~p~n", [Pid]);
+
+%% started collection
+message({start_collection, Pid}) ->
+    error_logger:info_msg("started collecting pid: ~p~n", [Pid]);
 
 %% handle any unspecified messages
 message(X) ->
