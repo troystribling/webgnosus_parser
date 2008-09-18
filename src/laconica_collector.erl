@@ -46,23 +46,8 @@ init({Pid, PollFrequency}) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-%% collect data from laconica server
-handle_call(collect, _From, {Pid, PollFrequency, Collect}) ->
-    if 
-      Collect =:= true -> 
-          do_collection(Pid),
-          timer:sleep(PollFrequency * 1000),
-          gen_server:call(self(), collect)
-    end,
-    {reply, ok, {Pid, PollFrequency, Collect}};
-
-%% start collecting data from laconica server
-handle_call(start_collection, _From, {Pid, PollFrequency, _Collect}) ->  
-    {reply, ok, {Pid, PollFrequency, true}};
-
-%% stop collecting data from laconica server
-handle_call(stop_collection, _From, {Pid, PollFrequency, _Collect}) ->  
-    {reply, ok, {Pid, PollFrequency, false}}.
+handle_call(Request, _From, State) ->  
+    {reply, Request, State}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State}          |
@@ -70,8 +55,17 @@ handle_call(stop_collection, _From, {Pid, PollFrequency, _Collect}) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
-handle_cast(_Msg, State) ->
-    {noreply, State}.
+%% collect data from laconica server
+handle_cast(collect, State) ->
+    do_collection(State);
+
+%% start collecting data from laconica server
+handle_cast(start_collection, {Pid, PollFrequency, _Collect}) ->  
+    {reply, start, {Pid, PollFrequency, true}};
+
+%% stop collecting data from laconica server
+handle_cast(stop_collection, {Pid, PollFrequency, _Collect}) ->  
+    {reply, stop, {Pid, PollFrequency, false}}.
 
 %%--------------------------------------------------------------------
 %% Function: handle_info(Info, State) -> {noreply, State}          |
@@ -117,8 +111,17 @@ start_link({Pid, PollFrequency}) ->
 %% Func: do_collection/1
 %% Description: collect data from laconica server
 %%--------------------------------------------------------------------
-do_collection(Pid) ->
-    gen_server:call(Pid, public_timeline).
+do_collection({Pid, PollFrequency, Collect}) ->
+    case Collect of 
+        true ->
+            webgnosus_events:message({collection, Pid}),
+            gen_server:call(Pid, public_timeline),
+            timer:sleep(PollFrequency * 1000),
+            gen_server:cast(self(), collect),
+            {noreply, {Pid, PollFrequency, true}};
+        false -> 
+            {noreply, {Pid, PollFrequency, false}}
+    end.
         
     
     

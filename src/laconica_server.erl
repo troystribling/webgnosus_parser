@@ -13,7 +13,9 @@
          public_timeline/0,
          open_session/1,
          open_session/2,
-         close_session/1
+         close_session/1,
+         stop_collectors/0,
+         start_collectors/0
         ]).
 
 %% gen_server callbacks
@@ -66,6 +68,15 @@ handle_call({open_session, Url}, _From, Sessions) ->
 %% close session with specified Url
 handle_call({close_session, Url}, _From, Sessions) ->  
     do_close_session(Url, Sessions);
+
+%%--------------------------------------------------------------------
+%% stop collectors
+handle_call(stop_collectors, _From, Sessions) ->  
+    do_collectors_request(stop_collector, Sessions);
+
+%% start collectors
+handle_call(start_collectors, _From, Sessions) ->  
+    do_collectors_request(start_collector, Sessions);
 
 %%--------------------------------------------------------------------
 %% get public timeline
@@ -148,8 +159,22 @@ open_session(Url, PollFrequency) ->
 close_session(Url) ->
     gen_server:call(?MODULE, {close_session, Url}).
 
+%%--------------------------------------------------------------------
+%% Func: start_collectors/0
+%% Description: start collectors 
+%%--------------------------------------------------------------------
+start_collectors() ->
+    gen_server:call(?MODULE, start_collectors).
+
+%%--------------------------------------------------------------------
+%% Func: stop_collectors/0
+%% Description: stop collectors 
+%%--------------------------------------------------------------------
+stop_collectors() ->
+    gen_server:call(?MODULE, stop_collectors).
+
 %%====================================================================
-%%% Internal functions
+%%% API Handlers
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: do_public_timeline/1
@@ -160,6 +185,60 @@ do_public_timeline(Sessions) ->
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
       _ -> [gen_server:call(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: do_open_session/3
+%% Description: spawn laconica server interface process
+%%--------------------------------------------------------------------
+do_open_session(Url, PollFrequency, Sessions) ->
+    case gb_trees:is_defined(Url, Sessions) of
+        false ->
+            Response = spawn_session(Url, PollFrequency, Sessions),
+            laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}),
+            Response;
+        true -> 
+            webgnosus_events:warning({session_open, Url}), 
+            {reply, ok, Sessions}
+    end.
+                
+%%--------------------------------------------------------------------
+%% Func: do_close_session/2
+%% Description: stop laconica server interface process
+%%--------------------------------------------------------------------
+do_close_session(Url, Sessions) ->
+    case gb_trees:is_defined(Url, Sessions) of
+      true ->  {InterfacePid, CollectorPid}  = gb_trees:get(Url, Sessions),
+               exit(InterfacePid, normal),
+               exit_collector(CollectorPid),
+               laconica_site_model:delete(Url),
+               {reply, ok, gb_trees:delete(Url, Sessions)};
+      false -> webgnosus_events:warning({session_not_found, Url}), 
+               {reply, error, Sessions}
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: do_start_collectors/1
+%% Description: start laconica data collectors
+%%--------------------------------------------------------------------
+do_collectors_request(Msg, Sessions) ->
+    SessionList = gb_trees:to_list(Sessions),
+    case length(SessionList) of
+      0 -> webgnosus_events:warning(["call open_session."]), error;
+      _ -> [send_collector_message(CollectorPid, Msg)|| {_Url, {_InterfacePid, CollectorPid}} <- SessionList]
+    end.
+
+%%====================================================================
+%%% Internal functions
+%%====================================================================
+%%--------------------------------------------------------------------
+%% Func: send_collector_message/2
+%% Description: send message to collector
+%%--------------------------------------------------------------------
+send_collector_message(Pid, Msg) ->
+    case Pid of
+      -1 -> ok;
+       _ -> gen_server:cast(Pid, Msg)
     end.
 
 %%--------------------------------------------------------------------
@@ -180,45 +259,21 @@ spawn_sessions([Site|Sites], Sessions) ->
 %%--------------------------------------------------------------------
 spawn_session(Url, PollFrequency, Sessions) ->
     {InterfaceStatus, InterfacePid} = laconica_interface:start_link(Url),
-    if
-        PollFrequency == 0 ->
-            {reply, InterfaceStatus, gb_trees:insert(Url, {InterfacePid, 0}, Sessions)};
-        true ->
+    case PollFrequency of
+        0 ->
+            {reply, InterfaceStatus, gb_trees:insert(Url, {InterfacePid, -1}, Sessions)};
+        _ ->
             {_CollectorStatus, CollectorPid} = laconica_collector:start_link({InterfacePid, PollFrequency}),
+            send_collector_message(CollectorPid, collect),
             {reply, InterfaceStatus, gb_trees:insert(Url, {InterfacePid, CollectorPid}, Sessions)}
     end.
 
 %%--------------------------------------------------------------------
-%% Func: do_open_session/3
-%% Description: spawn laconica server interface process
+%% Func: exit_collector/1
+%% Description: exit collector proccess if it exists
 %%--------------------------------------------------------------------
-do_open_session(Url, PollFrequency, Sessions) ->
-    case gb_trees:is_defined(Url, Sessions) of
-        false ->
-            Response = spawn_session(Url, PollFrequency, Sessions),
-            write_site(Url, PollFrequency),
-            Response;
-        true -> {reply, ok, Sessions}
+exit_collector(Pid) ->
+    case Pid of
+      -1 -> ok;
+       _ -> exit(Pid, normal)
     end.
-                
-
-%%--------------------------------------------------------------------
-%% Func: do_close_session/2
-%% Description: spawn laconica server interface process
-%%--------------------------------------------------------------------
-do_close_session(Url, Sessions) ->
-    case gb_trees:is_defined(Url, Sessions) of
-      true ->  Pid  = gb_trees:get(Url, Sessions),
-               exit(Pid, normal),
-               laconica_site_model:delete(Url),
-               {reply, ok, gb_trees:delete(Url, Sessions)};
-      false -> webgnosus_events:warning({session_not_found, Url}), 
-               {reply, error, Sessions}
-    end.
-
-%%--------------------------------------------------------------------
-%% Func: write_site/3
-%% Description: spawn laconica server interface process
-%%--------------------------------------------------------------------
-write_site(Url, PollFrequency) ->
-    laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}).

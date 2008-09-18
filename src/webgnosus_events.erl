@@ -27,7 +27,11 @@ message({stopped, M}) ->
 
 %% retrived public timeline
 message({public_timeline, Url}) ->
-    error_logger:info_msg("Retrieved public timeline for: ~p~n", [Url]);
+    error_logger:info_msg("retrieved public timeline for: ~p~n", [Url]);
+
+%% retrived public timeline
+message({collection, Pid}) ->
+    error_logger:info_msg("collecting pid: ~p~n", [Pid]);
 
 %% handle any unspecified messages
 message(X) ->
@@ -45,9 +49,13 @@ warning({mnesia_start_timeout, T}) ->
 warning({mnesia_start_error, M}) ->
     error_logger:warning_msg("mnesia start error: ~p~n", [M]);
 
-%% mnesia start error
+%% laconica session not found
 warning({session_not_found, M}) ->
     error_logger:warning_msg("session close error not found: ~p~n", [M]);
+
+%% laconica session is open
+warning({session_open, M}) ->
+    error_logger:warning_msg("session is open: ~p~n", [M]);
 
 %% http get error
 warning({http_get_failed, M}) ->
