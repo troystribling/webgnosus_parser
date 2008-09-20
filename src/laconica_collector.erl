@@ -117,7 +117,7 @@ do_collection({Pid, PollFrequency, Collect}) ->
     case Collect of 
         true ->
             webgnosus_events:message({collection, Pid}),
-            gen_server:call(Pid, public_timeline);
+            gen_server:cast(Pid, public_timeline);
         false -> 
             void
     end,

@@ -10,7 +10,8 @@
           clear_table/0,
           write/1,
           delete/1,
-          find/1
+          find/1,
+          key/1
        ]).
 
 %% include
@@ -70,6 +71,14 @@ delete({StatusId, UserId}) ->
 %% find all models
 find(all) ->
     webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_statuses)])).
+
+%%--------------------------------------------------------------------
+%% Func: key/1
+%% Description: define model key
+%%--------------------------------------------------------------------
+%% find all models
+key({StatusId, UserId, SiteUrl}) ->
+    {StatusId, UserId, SiteUrl}.
 
 %%====================================================================
 %%% Internal functions

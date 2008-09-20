@@ -41,8 +41,8 @@ status_users(Body, SiteUrl) ->
 status(Node, SiteUrl) ->
     StatusId = extract_text("/status/id/text()", Node),
     Status = #laconica_statuses{
+        status_id             = laconica_status_model:key({StatusId, -1, SiteUrl}),
         created_at            = extract_text("/status/created_at/text()", Node),
-        status_id             = StatusId,
         site                  = SiteUrl,
         text                  = extract_text("/status/text/text()", Node),
         source                = extract_text("/status/source/text()", Node),
@@ -56,9 +56,9 @@ status(Node, SiteUrl) ->
         [UserNode] -> 
             UserId = extract_text("/user/id/text()", UserNode),
             Status#laconica_statuses{
+                status_id = laconica_status_model:key({StatusId, UserId, SiteUrl}),
                 user_id   = UserId,
-                user_name = extract_text("/user/name/text()", UserNode),
-                status_id = {StatusId, UserId, SiteUrl}
+                user_name = extract_text("/user/name/text()", UserNode)
             }
     end.
     
@@ -70,7 +70,8 @@ status(Node, SiteUrl) ->
 status_user(Node, SiteUrl) ->
     [UserNode] = xmerl_xpath:string("/status/user", Node),
     #laconica_users{
-        user_id           = {extract_text("/user/id/text()", UserNode), SiteUrl},
+        user_id           = laconica_user_model:key({extract_text("/user/id/text()", UserNode), SiteUrl}),
+        site              = SiteUrl,
         user_name         = extract_text("/user/name/text()", UserNode),
         followers_count   = extract_text("/user/followers_count/text()", UserNode),
         screen_name       = extract_text("/user/screen_name/text()", UserNode),

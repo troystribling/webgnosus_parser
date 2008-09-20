@@ -184,7 +184,7 @@ do_public_timeline(Sessions) ->
     SessionList = gb_trees:to_list(Sessions),
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
-      _ -> [gen_server:call(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
+      _ -> [gen_server:cast(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
     end.
 
 %%--------------------------------------------------------------------
@@ -195,7 +195,7 @@ do_open_session(Url, PollFrequency, Sessions) ->
     case gb_trees:is_defined(Url, Sessions) of
         false ->
             Response = spawn_session(Url, PollFrequency, Sessions),
-            laconica_site_model:write(#laconica_sites{root_url = Url, poll_frequency = PollFrequency}),
+            laconica_site_model:write(#laconica_sites{root_url = laconica_site_model:key(Url), poll_frequency = PollFrequency}),
             Response;
         true -> 
             webgnosus_events:warning({session_open, Url}), 
