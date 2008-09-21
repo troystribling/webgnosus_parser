@@ -28,7 +28,7 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(laconica_users, [{attributes, record_info(fields, laconica_users)}, {disc_copies, [node()]}]).
+    webgnosus_dbi:create_table(laconica_users, [{attributes, record_info(fields, laconica_users)}, {disc_only_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
