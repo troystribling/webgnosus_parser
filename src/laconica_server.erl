@@ -11,6 +11,7 @@
 -export([
          start_link/0,
          public_timeline/0,
+         public_timeline/1,
          open_session/1,
          open_session/2,
          close_session/1,
@@ -80,6 +81,9 @@ handle_call(start_collectors, _From, Sessions) ->
 
 %%--------------------------------------------------------------------
 %% get public timeline
+handle_call({public_timeline, Url}, _From, Sessions) ->  
+    {reply, do_public_timeline(Sessions, Url), Sessions};
+
 handle_call(public_timeline, _From, Sessions) ->  
     {reply, do_public_timeline(Sessions), Sessions}.
 
@@ -131,10 +135,17 @@ start_link() ->
 
 %%--------------------------------------------------------------------
 %% Func: public_timeline/0
-%% Description: request public timeline from server
+%% Description: request public timelines for all servers
 %%--------------------------------------------------------------------
 public_timeline() ->
     gen_server:call(?MODULE, public_timeline).
+
+%%--------------------------------------------------------------------
+%% Func: public_timeline/1
+%% Description: request public timeline for server with URL
+%%--------------------------------------------------------------------
+public_timeline(Url) ->
+    gen_server:call(?MODULE, {public_timeline, Url}).
 
 %%--------------------------------------------------------------------
 %% Func: open_session/1
@@ -178,13 +189,26 @@ stop_collectors() ->
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: do_public_timeline/1
-%% Description: spawn laconica server interface process
+%% Description: get public timeline for all servers
 %%--------------------------------------------------------------------
 do_public_timeline(Sessions) ->
     SessionList = gb_trees:to_list(Sessions),
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
       _ -> [gen_server:cast(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: do_public_timeline/2
+%% Description: get public timeline for specified server
+%%--------------------------------------------------------------------
+do_public_timeline(Sessions, Url) ->
+    case gb_trees:is_defined(Url, Sessions) of
+      true -> 
+          {InterfacePid, _CollectorPid} = gb_trees:get(Url, Sessions),
+          gen_server:cast(InterfacePid, public_timeline);
+      false -> 
+          webgnosus_events:warning({session_not_found, Url}), error
     end.
 
 %%--------------------------------------------------------------------

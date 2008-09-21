@@ -59,7 +59,7 @@ warning({mnesia_start_error, M}) ->
 
 %% laconica session not found
 warning({session_not_found, M}) ->
-    error_logger:warning_msg("session close error not found: ~p~n", [M]);
+    error_logger:warning_msg("session not found: ~p~n", [M]);
 
 %% laconica session is open
 warning({session_open, M}) ->

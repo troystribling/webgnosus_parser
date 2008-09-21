@@ -17,9 +17,9 @@
 %% Description: http get request to specified url.
 %%--------------------------------------------------------------------
 get_url(Url) ->
-    HTTPDoc = http:request(get, {Url, headers()}, [], []),
-    case HTTPDoc of
-        {ok, {_Status, _Headers, Body}} -> Body;
+    HttpDoc = http:request(get, {Url, headers()}, [], []),
+    case HttpDoc of
+        {ok, {{_,200,_}, _Headers, Body}} -> Body;
         _ -> {error}
     end.
 

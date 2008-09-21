@@ -108,12 +108,12 @@ start_link(RootUrl) ->
 %% server.
 %%--------------------------------------------------------------------
 do_public_timeline(RootUrl) ->
-    webgnosus_events:message({public_timeline, RootUrl}),
     Path = RootUrl ++ "/api/statuses/public_timeline.xml",
     case webgnosus_http:get_url(Path) of
         {error} ->
                 webgnosus_events:warning({http_get_failed, Path});
             Doc ->
+                webgnosus_events:message({public_timeline, RootUrl}),
                 ParsedDoc = webgnosus_http:parse_xml(Doc),
                 [laconica_status_model:write(S) || S <- laconica_parser:statuses(ParsedDoc, RootUrl)],
                 [laconica_user_model:write(U)   || U <- laconica_parser:status_users(ParsedDoc, RootUrl)]
