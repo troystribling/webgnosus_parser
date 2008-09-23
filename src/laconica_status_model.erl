@@ -12,6 +12,7 @@
           delete/1,
           find/1,
           count/0,
+          last_by_site/2,
           key/1
        ]).
 
@@ -82,6 +83,32 @@ count() ->
     {atomic, Val} = mnesia:transaction(
         fun() ->
            qlc:fold(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_statuses)]))
+        end),
+    Val.       
+
+%%--------------------------------------------------------------------
+%% Func: last_by_status_id/1
+%% Description: sort models by key and return specifed number
+%%              with largest value.
+%%--------------------------------------------------------------------
+%% count rows
+last_by_site(LastCount, Site) ->  
+    
+    SortedQH = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site]),
+                {order, 
+                    fun(Status1,Status2) ->
+                       {StatusId1, _, _} = Status1#laconica_statuses.status_id,
+                       {StatusId2, _, _} = Status2#laconica_statuses.status_id,
+                       StatusId1 < StatusId2
+                    end}),
+
+   % and run the query
+   {atomic, Val} = mnesia:transaction(
+        fun() ->
+           Cursor = qlc:cursor(SortedQH),
+           Result = qlc:next_answers(Cursor, LastCount),
+           qlc:delete(Cursor),
+           Result
         end),
     Val.       
 
