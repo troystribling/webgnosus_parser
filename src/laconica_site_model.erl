@@ -11,6 +11,7 @@
           write/1,
           delete/1,
           find/1,
+          count/0,
           key/1
        ]).
 
@@ -71,6 +72,18 @@ delete(RootUrl) ->
 %% find all models
 find(all) ->
     webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_sites)])).
+
+%%--------------------------------------------------------------------
+%% Func: count/0
+%% Description: return row count
+%%--------------------------------------------------------------------
+%% count rows
+count() ->    
+    {atomic, Val} = mnesia:transaction(
+        fun() ->
+           qlc:fold(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_sites)]))
+        end),
+    Val.       
 
 %%--------------------------------------------------------------------
 %% Func: key/1
