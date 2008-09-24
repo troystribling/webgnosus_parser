@@ -58,7 +58,7 @@ status(Node, SiteUrl) ->
             Status#laconica_statuses{
                 status_id = laconica_status_model:key({StatusId, UserId, SiteUrl}),
                 user_id   = UserId,
-                user_name = extract_text("/user/name/text()", UserNode)
+                screen_name = extract_text("/user/screen_name/text()", UserNode)
             }
     end.
     

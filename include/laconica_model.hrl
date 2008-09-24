@@ -15,7 +15,7 @@
         site,
         created_at, 
         user_id,
-        user_name, 
+        screen_name, 
         text,
         source,
         truncated, 

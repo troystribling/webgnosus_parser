@@ -13,6 +13,7 @@
           find/1,
           count/0,
           last_by_site/2,
+          list_last_by_site/2,
           key/1
        ]).
 
@@ -87,19 +88,19 @@ count() ->
     Val.       
 
 %%--------------------------------------------------------------------
-%% Func: last_by_status_id/1
+%% Func: last_by_status_id/2
 %% Description: sort models by key and return specifed number
 %%              with largest value.
 %%--------------------------------------------------------------------
 %% count rows
-last_by_site(LastCount, Site) ->  
+last_by_site(Site, LastCount) ->  
     
     SortedQH = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site]),
                 {order, 
                     fun(Status1,Status2) ->
                        {StatusId1, _, _} = Status1#laconica_statuses.status_id,
                        {StatusId2, _, _} = Status2#laconica_statuses.status_id,
-                       StatusId1 < StatusId2
+                       StatusId1 > StatusId2
                     end}),
 
    % and run the query
@@ -107,10 +108,25 @@ last_by_site(LastCount, Site) ->
         fun() ->
            Cursor = qlc:cursor(SortedQH),
            Result = qlc:next_answers(Cursor, LastCount),
-           qlc:delete(Cursor),
+           qlc:delete_cursor(Cursor),
            Result
         end),
     Val.       
+
+%%--------------------------------------------------------------------
+%% Func: list_last_by_status_id/2
+%% Description: sort models by key and return specifed number
+%%              with largest value.
+%%--------------------------------------------------------------------
+%% count rows
+list_last_by_site(Site, LastCount) ->  
+    
+    Display = fun(Status) -> 
+        io:format("~p~n~p~n~p~n~n", [Status#laconica_statuses.screen_name, Status#laconica_statuses.created_at, Status#laconica_statuses.text])
+    end,
+    
+    [Display(S) || S <- last_by_site(Site, LastCount)],
+    ok.
 
 %%--------------------------------------------------------------------
 %% Func: key/1
