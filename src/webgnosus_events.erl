@@ -69,6 +69,10 @@ warning({session_open, M}) ->
 warning({http_get_failed, M}) ->
     error_logger:warning_msg("http get failed for: ~p~n", [M]);
 
+%% XML parse error
+warning({xml_parse_failed, [Url, X]}) ->
+    error_logger:warning_msg("xml parse failed for: ~p~n~ncaught execption: ~p~n", [Url, X]);
+
 %% handle any unspecified messages
 warning(X) ->
     error_logger:warning_msg("~p~n", X).

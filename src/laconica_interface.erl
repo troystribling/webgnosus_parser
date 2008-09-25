@@ -105,7 +105,7 @@ start_link(RootUrl) ->
 %%--------------------------------------------------------------------
 %% Func: get_public_timeline/1
 %% Description: request puiblic time line from specified laconica
-%% server.
+%%              server.
 %%--------------------------------------------------------------------
 do_public_timeline(RootUrl) ->
     Path = RootUrl ++ "/api/statuses/public_timeline.xml",
@@ -114,10 +114,18 @@ do_public_timeline(RootUrl) ->
                 webgnosus_events:warning({http_get_failed, Path});
             Doc ->
                 webgnosus_events:message({public_timeline, RootUrl}),
-                ParsedDoc = webgnosus_http:parse_xml(Doc),
-                [laconica_status_model:write(S) || S <- laconica_parser:statuses(ParsedDoc, RootUrl)],
-                [laconica_user_model:write(U)   || U <- laconica_parser:status_users(ParsedDoc, RootUrl)]
+                try parse_and_save_public_timeline(Doc, RootUrl)
+                catch
+                  _:X -> 
+                      webgnosus_events:warning({xml_parse_failed, [Path, X]})
+                end
     end.
         
-    
-    
+%%--------------------------------------------------------------------
+%% Func: parse_and_save_public_timeline/2
+%% Description: parse and save public timeline
+%%--------------------------------------------------------------------
+parse_and_save_public_timeline(Doc, RootUrl) ->
+    ParsedDoc = webgnosus_http:parse_xml(Doc),
+    [laconica_status_model:write(S) || S <- laconica_parser:statuses(ParsedDoc, RootUrl)],
+    [laconica_user_model:write(U)   || U <- laconica_parser:status_users(ParsedDoc, RootUrl)].
