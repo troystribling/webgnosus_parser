@@ -49,7 +49,9 @@ status(Node, SiteUrl) ->
         truncated             = extract_text("/status/truncated/text()", Node),
         in_reply_to_status_id = extract_text("/status/in_reply_to_status_id/text()", Node),
         in_reply_to_user_id   = extract_text("/status/in_reply_to_user_id/text()", Node),
-        favorited             = extract_text("/status/favorited/text()", Node)
+        favorited             = extract_text("/status/favorited/text()", Node),
+        processed             = false
+
     },
     case xmerl_xpath:string("/status/user", Node) of
         [] -> Status;
@@ -79,7 +81,8 @@ status_user(Node, SiteUrl) ->
         location          = extract_text("/user/location/text()", UserNode),
         profile_image_url = extract_text("/user/profile_image_url/text()", UserNode),
         protected         = extract_text("/user/protected/text()", UserNode),
-        url               = extract_text("/user/url/text()", UserNode)
+        url               = extract_text("/user/url/text()", UserNode),
+        processed         = false
     }.
     
 %%--------------------------------------------------------------------

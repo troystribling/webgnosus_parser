@@ -21,7 +21,8 @@
         truncated, 
         in_reply_to_status_id, 
         in_reply_to_user_id, 
-        favorited 
+        favorited,
+        processed
     }
 ).
                
@@ -51,6 +52,7 @@
         time_zone, 
         following, 
         notifications, 
-        statuses_count
+        statuses_count,
+        processed
     }
 ).
