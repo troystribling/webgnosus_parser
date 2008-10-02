@@ -13,12 +13,10 @@
           find/1,
           count/0,
           count_by_site/1,
-          last_by_site/2,
-          list_last_by_site/2,
-          first/1,
-          list_first/1,
-          last/1,
-          list_last/1,
+          oldest_by_site/2,
+          oldest/1,
+          latest/1,
+          latest_by_site/2,
           key/1
        ]).
 
@@ -85,11 +83,7 @@ find(all) ->
 %% Description: return row count
 %%--------------------------------------------------------------------
 count() ->    
-    {atomic, Val} = mnesia:transaction(
-        fun() ->
-           qlc:fold(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_statuses)]))
-        end),
-    Val.       
+     webgnosus_dbi:map(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_statuses)])).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
@@ -108,45 +102,58 @@ key({StatusId, UserId, SiteUrl}) ->
 %%              with smallest value.
 %%--------------------------------------------------------------------
 %% count rows
-first(Count) ->  
+oldest(Count) ->  
     
     SortedQ = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses)]),
                 {order, 
                     fun(Status1, Status2) ->
-                      order_by_status_id_ascending(Status1, Status2)
+                        false
                     end}),
 
    webgnosus_dbi:limit(SortedQ, Count).
 
 %%--------------------------------------------------------------------
-%% Func: last/1
-%% Description: sort models by key and return specifed number
-%%              with largest value.
+%% Func: latest/1
+%% Description: return latest
 %%--------------------------------------------------------------------
 %% count rows
-last(Count) ->  
+latest(Count) ->  
     
     SortedQ = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses)]),
                 {order, 
                     fun(Status1, Status2) ->
-                      order_by_status_id_descending(Status1, Status2)
+                        false
                     end}),
 
    webgnosus_dbi:limit(SortedQ, Count).
 
 
 %%--------------------------------------------------------------------
-%% Func: last_by_status_id/2
-%% Description: sort models by key and return specifed number
-%%              with largest value for specified site.
+%% Func: latest_by_site/2
+%% Description: return latest for specified site
 %%--------------------------------------------------------------------
 %% count rows
-last_by_site(Site, LastCount) ->  
+latest_by_site(Site, LastCount) ->  
     
     SortedQ = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site]),
                 {order, 
                     fun(Status1, Status2) ->
-                      order_by_status_id_descending(Status1, Status2)
+                        false
+                    end}),
+
+   webgnosus_dbi:limit(SortedQ, LastCount).
+
+%%--------------------------------------------------------------------
+%% Func: oldest_by_site/2
+%% Description: return oldest for specified site
+%%--------------------------------------------------------------------
+%% count rows
+oldest_by_site(Site, LastCount) ->  
+    
+    SortedQ = qlc:sort(qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site]),
+                {order, 
+                    fun(Status1, Status2) ->
+                      false
                     end}),
 
    webgnosus_dbi:limit(SortedQ, LastCount).
@@ -156,78 +163,9 @@ last_by_site(Site, LastCount) ->
 %% Description: return row count
 %%--------------------------------------------------------------------
 count_by_site(Site) ->    
-    {atomic, Val} = mnesia:transaction(
-        fun() ->
-           qlc:fold(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site]))
-        end),
-    Val.       
-
-%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%% format output
-%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%%--------------------------------------------------------------------
-%% Func: list_last_by_status_id/2
-%% Description: sort models by key and return specifed number
-%%              with largest value for specified site.
-%%--------------------------------------------------------------------
-list_last_by_site(Site, LastCount) ->  
-    
-    Display = fun(Status) -> 
-        io:format("~p~n~p~n~p~n~n", [Status#laconica_statuses.screen_name, Status#laconica_statuses.created_at, 
-            Status#laconica_statuses.text])
-    end,
-    
-    [Display(S) || S <- last_by_site(Site, LastCount)],
-    ok.
-
-%%--------------------------------------------------------------------
-%% Func: list_first/1
-%% Description: sort models by key and return specifed number
-%%              with smallest value.
-%%--------------------------------------------------------------------
-list_first(Count) ->  
-    
-    Display = fun(Status) -> 
-        io:format("~p~n~p~n~p~n~p~n~n", [Status#laconica_statuses.site, Status#laconica_statuses.screen_name, 
-            Status#laconica_statuses.created_at, Status#laconica_statuses.text])
-    end,
-    
-    [Display(S) || S <- first(Count)],
-    ok.
-
-%%--------------------------------------------------------------------
-%% Func: list_last/1
-%% Description: sort models by key and return specifed number
-%%              with smallest value.
-%%--------------------------------------------------------------------
-list_last(Count) ->  
-    
-    Display = fun(Status) -> 
-        io:format("~p~n~p~n~p~n~p~n~n", [Status#laconica_statuses.site, Status#laconica_statuses.screen_name, 
-            Status#laconica_statuses.created_at, Status#laconica_statuses.text])
-    end,
-    
-    [Display(S) || S <- last(Count)],
-    ok.
+     webgnosus_dbi:map(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site])).
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
-%%--------------------------------------------------------------------
-%% Func: order_by_status_id_descending/2
-%% Description: sort by descending status_id.
-%%--------------------------------------------------------------------
-order_by_status_id_descending(Status1, Status2) ->
-    {StatusId1, _, _} = Status1#laconica_statuses.status_id,
-    {StatusId2, _, _} = Status2#laconica_statuses.status_id,
-    StatusId1 > StatusId2.
-        
-%%--------------------------------------------------------------------
-%% Func: order_by_status_id_ascending/2
-%% Description: sort by descending status_id.
-%%--------------------------------------------------------------------
-order_by_status_id_ascending(Status1, Status2) ->
-    {StatusId1, _, _} = Status1#laconica_statuses.status_id,
-    {StatusId2, _, _} = Status2#laconica_statuses.status_id,
-    StatusId1 < StatusId2.
         

@@ -18,9 +18,17 @@
 %%--------------------------------------------------------------------
 date_to_rfc1123(Date) ->
     case regexp:split(Date, " +") of
-        {ok, D} -> D;
+        {ok, D} -> lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
+                   lists:nth(6,D) ++ " " ++ lists:nth(4,D);
          X  -> X
     end.
+
+%%--------------------------------------------------------------------
+%% Func: date_to_rfc1123/1
+%% Description: convert laconica date format gregorian seconds.
+%%--------------------------------------------------------------------
+date_to_gregorian_seconds(Date) ->
+    calendar:datetime_to_gregorian_seconds(date_to_rfc1123(Date)).
 
 %%====================================================================
 %%% Internal functions

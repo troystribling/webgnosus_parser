@@ -11,7 +11,8 @@
           write_row/1,
           delete_row/1,
           q/1,
-          limit/2
+          limit/2,
+          map/3
        ]).
 
 %%====================================================================
@@ -81,13 +82,24 @@ q(Q) ->
 %% Func: limit/1
 %% Description: limit results of query to count
 %%--------------------------------------------------------------------
-limit(Query, Count) ->
+limit(Q, C) ->
    {atomic, Val} = mnesia:transaction(
         fun() ->
-           Cursor = qlc:cursor(Query),
-           Result = qlc:next_answers(Cursor, Count),
+           Cursor = qlc:cursor(Q),
+           Result = qlc:next_answers(Cursor, C),
            qlc:delete_cursor(Cursor),
            Result
+        end),
+    Val.       
+
+%%--------------------------------------------------------------------
+%% Func: map/3
+%% Description: apply function to query
+%%--------------------------------------------------------------------
+map(F, I, Q) ->
+    {atomic, Val} = mnesia:transaction(
+        fun() ->
+           qlc:fold(F, I, Q)
         end),
     Val.       
 
