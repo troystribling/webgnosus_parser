@@ -1,22 +1,26 @@
 %%%-------------------------------------------------------------------
-%%% webgnosus word processing utilities
+%%% laconica utilities
 %%%-------------------------------------------------------------------
--module(webgnosus_words).
+-module(laconica_util).
 
 %% API
 -export([
-          preprocess/1
+          date_to_rfc1123/1,
+          date_to_gregorian_seconds/1
         ]).
 
 %%====================================================================
 %% API
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: process/1
-%% Description: http get request to specified url.
+%% Func: date_to_rfc1123/1
+%% Description: convert laconica date format to rfc 1123.
 %%--------------------------------------------------------------------
-preprocess(_Val) ->
-  no.
+date_to_rfc1123(Date) ->
+    case regexp:split(Date, " +") of
+        {ok, D} -> D;
+         X  -> X
+    end.
 
 %%====================================================================
 %%% Internal functions

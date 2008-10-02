@@ -15,8 +15,8 @@
 %% Func: process/1
 %% Description: http get request to specified url.
 %%--------------------------------------------------------------------
-preprocess(Text) ->
-  Result.
+preprocess(_Val) ->
+  no.
 
 %%====================================================================
 %%% Internal functions
