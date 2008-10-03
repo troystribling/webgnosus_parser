@@ -27,27 +27,27 @@ task :compile => ['ebin'] + OBJ
 
 desc "open up a shell"
 task :shell => [:compile] do
-    sh("erl -sname #{START_MODULE} -pa #{PWD}/ebin -mnesia dir '\"#{MNESIA_DIR}\"'")
+    sh("erl -boot start_sasl -sname #{START_MODULE} -pa #{PWD}/ebin  #{PWD}/src -run #{START_MODULE} init_shell -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
-desc "open up a shell and run #{START_MODULE}:start()" 
-task :run => [:compile] do
+desc "open up a shell and start collector" 
+task :collect => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:create_tables()" 
 task :create_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
+    sh("erl -boot start_sasl -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} create_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:delete_tables()" 
 task :delete_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
+    sh("erl -boot start_sasl -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} delete_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "open up a shell and run #{START_MODULE}:delete_tables()" 
 task :clear_tables => [:compile] do
-    sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} clear_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
+    sh("erl -boot start_sasl -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} clear_tables -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
 desc "generate Documentation"

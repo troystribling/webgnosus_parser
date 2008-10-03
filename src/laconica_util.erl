@@ -18,8 +18,9 @@
 %%--------------------------------------------------------------------
 date_to_rfc1123(Date) ->
     case regexp:split(Date, " +") of
-        {ok, D} -> lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
-                   lists:nth(6,D) ++ " " ++ lists:nth(4,D);
+        {ok, D} ->             
+            lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
+                                            lists:nth(6,D) ++ " " ++ prepend_zero_to_time(lists:nth(4,D));
          X  -> X
     end.
 
@@ -33,3 +34,14 @@ date_to_gregorian_seconds(Date) ->
 %%====================================================================
 %%% Internal functions
 %%====================================================================
+%%--------------------------------------------------------------------
+%% Func: date_to_rfc1123/1
+%% Description: convert laconica date format to rfc 1123.
+%%--------------------------------------------------------------------
+prepend_zero_to_time(Time) ->
+    case regexp:first_match(Time, "^0") of
+        {match, _, _} ->
+            "0" ++ Time;
+        _ -> 
+            Time
+    end.

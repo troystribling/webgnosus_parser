@@ -9,6 +9,7 @@
 -export([
 	 start/0,
 	 stop/0,
+	 init_shell/0,
          create_tables/0,
          delete_tables/0,
          clear_tables/0
@@ -96,6 +97,19 @@ clear_tables() ->
    init:stop(),
    ok.
     
+%%--------------------------------------------------------------------
+%% Func: init_shell() 
+%% Returns: {ok, Pid}        |       
+%%          {ok, Pid, State} |  
+%%          {error, Reason}   
+%% Description: initilaize shell but do not start applications
+%%--------------------------------------------------------------------
+init_shell() ->
+    webgnosus_events:message({started, {?MODULE}}),
+    inets:start(),
+    mnesia:start(),
+    wait_for_tables().
+
 %%====================================================================
 %%% Internal functions
 %%====================================================================
