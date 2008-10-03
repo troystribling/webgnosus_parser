@@ -19,8 +19,8 @@
 date_to_rfc1123(Date) ->
     case regexp:split(Date, " +") of
         {ok, D} ->             
-            lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
-                                            lists:nth(6,D) ++ " " ++ prepend_zero_to_time(lists:nth(4,D));
+            httpd_util:convert_request_date(lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
+                                             lists:nth(6,D) ++ " " ++ prepend_zero_to_time(lists:nth(4,D)));
          X  -> X
     end.
 
@@ -41,7 +41,7 @@ date_to_gregorian_seconds(Date) ->
 prepend_zero_to_time(Time) ->
     case regexp:first_match(Time, "^0") of
         {match, _, _} ->
-            "0" ++ Time;
+            Time;
         _ -> 
-            Time
+            "0" ++ Time
     end.

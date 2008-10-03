@@ -84,8 +84,12 @@ find(all) ->
 %% Description: return row count
 %%--------------------------------------------------------------------
 count() ->    
-     webgnosus_dbi:map(fun(_X, Sum) -> Sum + 1 end, 0, 
-                       qlc:q([X || X <- mnesia:table(laconica_statuses)])).
+     webgnosus_dbi:map(
+         fun(_X, Sum) -> 
+             Sum + 1 
+         end, 
+         0,
+         qlc:q([X || X <- mnesia:table(laconica_statuses)])).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
@@ -104,11 +108,11 @@ key({StatusId, UserId, SiteUrl}) ->
 %%--------------------------------------------------------------------
 oldest() ->      
     webgnosus_dbi:map(
-                      fun(S, Old) ->  
-                          older(S, Old)
-                      end, 
-                      {}, 
-                      qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+        fun(S, Old) ->  
+            older(S, Old)
+        end, 
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
 
 %%--------------------------------------------------------------------
 %% Func: latest/1
@@ -116,11 +120,12 @@ oldest() ->
 %%--------------------------------------------------------------------
 latest() ->  
     webgnosus_dbi:map(
-                      fun(S, Late) ->  
-                          later(S, Late)
-                      end, 
-                      {}, 
-                      qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+        fun(S, Late) ->  
+    #laconica_statuses{created_at = LateD} = Late,
+    #laconica_statuses{created_at = SD} = S
+        end,
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
 
 
 %%--------------------------------------------------------------------
@@ -130,11 +135,11 @@ latest() ->
 %% count rows
 oldest_by_site(Site) ->      
     webgnosus_dbi:map(
-                      fun(S, Old) ->  
-                          older(S, Old)
-                      end, 
-                      {}, 
-                      qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
+        fun(S, Old) ->  
+            older(S, Old)
+        end, 
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%--------------------------------------------------------------------
 %% Func: latest_by_site/1
@@ -143,19 +148,23 @@ oldest_by_site(Site) ->
 %% count rows
 latest_by_site(Site) ->      
     webgnosus_dbi:map(
-                      fun(S, Late) ->  
-                          later(S, Late)
-                      end, 
-                      {}, 
-                      qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
+        fun(S, Late) ->  
+            later(S, Late)
+        end, 
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%--------------------------------------------------------------------
 %% Func: count_by_site/1
 %% Description: return row count for specified site
 %%--------------------------------------------------------------------
 count_by_site(Site) ->
-    webgnosus_dbi:map(fun(_X, Sum) -> Sum + 1 end, 0, 
-                      qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site])).
+    webgnosus_dbi:map(
+        fun(_X, Sum) -> 
+            Sum + 1
+        end, 
+        0, 
+        qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site])).
 
 %%====================================================================
 %% Internal functions
@@ -180,14 +189,14 @@ older(S, Old) ->
 %% Func: older/2
 %% Description: return later status
 %%--------------------------------------------------------------------
-later(S, Old) ->  
-    #laconica_statuses{created_at = OldD} = Old,
+later(S, Late) ->  
+    #laconica_statuses{created_at = LateD} = Late,
     #laconica_statuses{created_at = SD} = S,
     SDSecs = laconica_util:date_to_gregorian_seconds(SD),
-    OldSecs = laconica_util:date_to_gregorian_seconds(OldD),
+    LateSecs = laconica_util:date_to_gregorian_seconds(LateD),
     if 
-         SDSecs > OldSecs ->
+         SDSecs > LateSecs ->
             S;
         true -> 
-            Old
+            Late
     end.
