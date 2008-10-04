@@ -163,6 +163,24 @@ latest({site, Site}) ->
             later(S, Late)
         end, 
         {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site]));
+
+%% return latest count of statuses
+latest({count, Count}) ->      
+    webgnosus_dbi:map(
+        fun(S, Late) ->  
+            later(S, Late, Count)
+        end, 
+        [], 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)]));
+
+%% return latest count of statuses for specified site
+latest({{site, Site}, {count, Count}}) ->      
+    webgnosus_dbi:map(
+        fun(S, Late) ->  
+            later(S, Late, Count)
+        end, 
+        [], 
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%====================================================================
@@ -176,30 +194,44 @@ older(S, {}) ->
     S;
 
 older(S, Old) ->  
-    SDSecs  = date_to_gregorian_seconds(S),
+    SSecs  = date_to_gregorian_seconds(S),
     OldSecs = date_to_gregorian_seconds(Old),
     if 
-         SDSecs < OldSecs ->
+         SSecs < OldSecs ->
             S;
         true -> 
             Old
     end.
 
 %%--------------------------------------------------------------------
-%% Func: older/2
+%% Func: later/2
 %% Description: return later status
 %%--------------------------------------------------------------------
 later(S, {}) ->  
     S;
 
 later(S, Late) ->  
-    SDSecs   = date_to_gregorian_seconds(S),
+    SSecs   = date_to_gregorian_seconds(S),
     LateSecs = date_to_gregorian_seconds(Late),
     if 
-         SDSecs > LateSecs ->
+         SSecs > LateSecs ->
             S;
         true -> 
             Late
+    end.
+    
+%%--------------------------------------------------------------------
+%% Func: later/3
+%% Description: add status to late list if later than any in list
+%%--------------------------------------------------------------------
+later(S, Late, Count) ->
+    SSecs   = date_to_gregorian_seconds(S),  
+    LateSize = length(Late),
+    if
+        LateSize < Count ->
+            lists:keysort(1, [{SSecs, S} | Late]);
+        true ->
+            update_later_list(SSecs, S, Late)
     end.
 
 %%--------------------------------------------------------------------
@@ -221,4 +253,18 @@ text_contains(S, R) ->
             true;
         _ -> 
             false
+    end.
+    
+%%--------------------------------------------------------------------
+%% Func: update_late_list/3
+%% Description: if status is later add to list.
+%%--------------------------------------------------------------------
+update_later_list(SSecs, S, Late) ->
+    {LatestSecs, _} ,
+    if
+        SSecs >= LatestSecs ->
+            gb_trees:insert(SSecs, S, Late),
+            gb_trees:take_smallest(Late);
+        true ->
+            Late
     end.
