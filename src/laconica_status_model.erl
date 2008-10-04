@@ -12,11 +12,11 @@
           delete/1,
           find/1,
           count/0,
-          count_by_site/1,
-          oldest_by_site/1,
+          count/1,
           oldest/0,
+          oldest/1,
           latest/0,
-          latest_by_site/1,
+          latest/1,
           key/1
        ]).
 
@@ -60,6 +60,7 @@ clear_table() ->
 %%--------------------------------------------------------------------
 write(R) when is_record(R, laconica_statuses) ->
     webgnosus_dbi:write_row(R);
+
 write(_) ->
     {atomic, error}.
 
@@ -77,19 +78,37 @@ delete({StatusId, UserId}) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_statuses)])).
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses)]));
+
+%% find all models where text matches specified rexp
+find({text, R}) ->
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R)]));
+
+%% find all models where text matches specified rexp and specified site
+find({{site, Site}, {text, R}}) ->
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R), S#laconica_statuses.site =:= Site])).
 
 %%--------------------------------------------------------------------
 %% Func: count/0
 %% Description: return row count
 %%--------------------------------------------------------------------
+%% return row count
 count() ->    
      webgnosus_dbi:map(
-         fun(_X, Sum) -> 
+         fun(_S, Sum) -> 
              Sum + 1 
          end, 
          0,
-         qlc:q([X || X <- mnesia:table(laconica_statuses)])).
+         qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+
+%% return row count for specified site
+count({site, Site}) ->
+    webgnosus_dbi:map(
+        fun(_S, Sum) -> 
+            Sum + 1
+        end, 
+        0, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
@@ -106,6 +125,7 @@ key({StatusId, UserId, SiteUrl}) ->
 %% Func: oldest/1
 %% Description: return the oldest status.
 %%--------------------------------------------------------------------
+%% return oldest status
 oldest() ->      
     webgnosus_dbi:map(
         fun(S, Old) ->  
@@ -114,26 +134,8 @@ oldest() ->
         {}, 
         qlc:q([S || S <- mnesia:table(laconica_statuses)])).
 
-%%--------------------------------------------------------------------
-%% Func: latest/1
-%% Description: return latest
-%%--------------------------------------------------------------------
-latest() ->  
-    webgnosus_dbi:map(
-        fun(S, Late) ->  
-    #laconica_statuses{created_at = LateD} = Late,
-    #laconica_statuses{created_at = SD} = S
-        end,
-        {}, 
-        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
-
-
-%%--------------------------------------------------------------------
-%% Func: oldest_by_site/1
-%% Description: return oldest status for specified site
-%%--------------------------------------------------------------------
-%% count rows
-oldest_by_site(Site) ->      
+%% return oldest status for specified site
+oldest({site, Site}) ->      
     webgnosus_dbi:map(
         fun(S, Old) ->  
             older(S, Old)
@@ -142,29 +144,26 @@ oldest_by_site(Site) ->
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%--------------------------------------------------------------------
-%% Func: latest_by_site/1
-%% Description: return latest status for specified site
+%% Func: latest/1
+%% Description: return latest
 %%--------------------------------------------------------------------
-%% count rows
-latest_by_site(Site) ->      
+%% return latest status
+latest() ->  
+    webgnosus_dbi:map(
+        fun(S, Late) ->  
+            later(S, Late)
+        end,
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+
+%% return latest status for specified site
+latest({site, Site}) ->      
     webgnosus_dbi:map(
         fun(S, Late) ->  
             later(S, Late)
         end, 
         {}, 
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
-
-%%--------------------------------------------------------------------
-%% Func: count_by_site/1
-%% Description: return row count for specified site
-%%--------------------------------------------------------------------
-count_by_site(Site) ->
-    webgnosus_dbi:map(
-        fun(_X, Sum) -> 
-            Sum + 1
-        end, 
-        0, 
-        qlc:q([X || X <- mnesia:table(laconica_statuses), X#laconica_statuses.site =:= Site])).
 
 %%====================================================================
 %% Internal functions
@@ -173,11 +172,12 @@ count_by_site(Site) ->
 %% Func: older/2
 %% Description: return older status
 %%--------------------------------------------------------------------
+older(S, {}) ->  
+    S;
+
 older(S, Old) ->  
-    #laconica_statuses{created_at = OldD} = Old,
-    #laconica_statuses{created_at = SD} = S,
-    SDSecs = laconica_util:date_to_gregorian_seconds(SD),
-    OldSecs = laconica_util:date_to_gregorian_seconds(OldD),
+    SDSecs  = date_to_gregorian_seconds(S),
+    OldSecs = date_to_gregorian_seconds(Old),
     if 
          SDSecs < OldSecs ->
             S;
@@ -189,14 +189,36 @@ older(S, Old) ->
 %% Func: older/2
 %% Description: return later status
 %%--------------------------------------------------------------------
+later(S, {}) ->  
+    S;
+
 later(S, Late) ->  
-    #laconica_statuses{created_at = LateD} = Late,
-    #laconica_statuses{created_at = SD} = S,
-    SDSecs = laconica_util:date_to_gregorian_seconds(SD),
-    LateSecs = laconica_util:date_to_gregorian_seconds(LateD),
+    SDSecs   = date_to_gregorian_seconds(S),
+    LateSecs = date_to_gregorian_seconds(Late),
     if 
          SDSecs > LateSecs ->
             S;
         true -> 
             Late
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: date_to_gregorian_seconds/1
+%% Description: convert laconica date format gregorian seconds.
+%%--------------------------------------------------------------------
+date_to_gregorian_seconds(S) ->
+    #laconica_statuses{created_at = SD} = S,
+    laconica_util:date_to_gregorian_seconds(SD).
+
+%%--------------------------------------------------------------------
+%% Func: tesxt_contains/2
+%% Description: true if specified rexp matches status text.
+%%--------------------------------------------------------------------
+text_contains(S, R) ->
+    #laconica_statuses{text = T} = S,
+    case regexp:first_match(T, R) of
+        {match, _, _} ->
+            true;
+        _ -> 
+            false
     end.
