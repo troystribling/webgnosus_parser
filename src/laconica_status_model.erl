@@ -66,11 +66,10 @@ write(_) ->
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
-%% Description: delete specifie record to database
+%% Description: delete specified record to database
 %%--------------------------------------------------------------------
 delete({StatusId, UserId}) ->
-    Oid = {laconica_statuses, {StatusId, UserId}},
-    webgnosus_dbi:delete_row(Oid).
+    webgnosus_dbi:delete_row({laconica_statuses, {StatusId, UserId}}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -94,13 +93,12 @@ find({{site, Site}, {text, R}}) ->
 %%--------------------------------------------------------------------
 %% return row count
 count() ->    
-     webgnosus_dbi:map(
-         fun(_S, Sum) -> 
-             Sum + 1 
-         end, 
-         0,
-         qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+    webgnosus_dbi:count(laconica_statuses).
 
+%%--------------------------------------------------------------------
+%% Func: count/1
+%% Description: return row count for specified site
+%%--------------------------------------------------------------------
 %% return row count for specified site
 count({site, Site}) ->
     webgnosus_dbi:map(

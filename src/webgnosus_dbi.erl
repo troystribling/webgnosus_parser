@@ -12,7 +12,8 @@
           delete_row/1,
           q/1,
           limit/2,
-          map/3
+          map/3,
+          count/1
        ]).
 
 %% include
@@ -106,6 +107,20 @@ map(F, I, Q) ->
            qlc:fold(F, I, Q)
         end),
     Val.       
+
+%%--------------------------------------------------------------------
+%% Func: count/0
+%% Description: return row count
+%%--------------------------------------------------------------------
+%% return row count
+count(Table) ->    
+     webgnosus_dbi:map(
+         fun(_S, Sum) -> 
+             Sum + 1 
+         end, 
+         0,
+         qlc:q([S || S <- mnesia:table(Table)])).
+
 
 %%====================================================================
 %%% Internal functions

@@ -59,11 +59,10 @@ write(_) ->
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
-%% Description: delete specifie record to database
+%% Description: delete specified record to database
 %%--------------------------------------------------------------------
 delete(RootUrl) ->
-    Oid = {laconica_sites, RootUrl},
-    webgnosus_dbi:delete_row(Oid).
+    webgnosus_dbi:delete_row({laconica_sites, RootUrl}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -77,12 +76,8 @@ find(all) ->
 %% Func: count/0
 %% Description: return row count
 %%--------------------------------------------------------------------
-count() ->    
-    {atomic, Val} = mnesia:transaction(
-        fun() ->
-           qlc:fold(fun(_X, Sum) -> Sum + 1 end, 0, qlc:q([X || X <- mnesia:table(laconica_sites)]))
-        end),
-    Val.       
+count() ->
+    webgnosus_dbi:count(laconica_sites).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
