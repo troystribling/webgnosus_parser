@@ -26,5 +26,10 @@ split(Doc) ->
 %% Func: pad_punctuation/1
 %% Description: .
 %%--------------------------------------------------------------------
-pad_punctuation(Doc, Punc) ->
-    Doc.
+pad_punctuation(Doc, Punc) ->    
+    case regexp:gsub(Doc, Punc ++ " ", " " ++ Punc) of
+        {ok, NewDoc, _} ->
+            NewDoc;
+        X -> 
+            X
+    end.

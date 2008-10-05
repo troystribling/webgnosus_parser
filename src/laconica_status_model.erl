@@ -68,8 +68,8 @@ write(_) ->
 %% Func: delete/1
 %% Description: delete specified record to database
 %%--------------------------------------------------------------------
-delete({StatusId, UserId}) ->
-    webgnosus_dbi:delete_row({laconica_statuses, {StatusId, UserId}}).
+delete({StatusId, UserId, Site}) ->
+    webgnosus_dbi:delete_row({laconica_statuses, {StatusId, UserId, Site}}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -85,7 +85,12 @@ find({text, R}) ->
 
 %% find all models where text matches specified rexp and specified site
 find({{site, Site}, {text, R}}) ->
-    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R), S#laconica_statuses.site =:= Site])).
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R), S#laconica_statuses.site =:= Site]));
+
+%% find specified record to database
+find({StatusId, UserId, Site}) ->
+    {atomic, Result} = webgnosus_dbi:read_row({laconica_statuses, {StatusId, UserId, Site}}),
+    Result.
 
 %%--------------------------------------------------------------------
 %% Func: count/0

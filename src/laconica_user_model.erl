@@ -61,9 +61,8 @@ write(_) ->
 %% Func: delete/1
 %% Description: delete specified record to database
 %%--------------------------------------------------------------------
-delete(UserId) ->
-    Oid = {laconica_users, UserId},
-    webgnosus_dbi:delete_row(Oid).
+delete({UserId, SiteUrl}) ->
+    webgnosus_dbi:delete_row({laconica_users, {UserId, SiteUrl}}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -71,7 +70,12 @@ delete(UserId) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_users)])).
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_users)]));
+
+%% find specified record to database
+find({UserId, SiteUrl}) ->
+    {atomic, Result} = webgnosus_dbi:read_row({laconica_users, {UserId, SiteUrl}}),
+    Result.
 
 %%--------------------------------------------------------------------
 %% Func: count/0

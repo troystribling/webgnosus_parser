@@ -10,6 +10,7 @@
           clear_table/1,
           write_row/1,
           delete_row/1,
+          read_row/1,
           q/1,
           limit/2,
           map/3,
@@ -57,6 +58,16 @@ write_row(Row) ->
     mnesia:transaction(
         fun() -> 
             mnesia:write(Row)
+        end).
+
+%%--------------------------------------------------------------------
+%% Func: read_row/1
+%% Description: write given record
+%%--------------------------------------------------------------------
+read_row(Row) ->
+    mnesia:transaction(
+        fun() -> 
+            mnesia:read(Row)
         end).
 
 %%--------------------------------------------------------------------

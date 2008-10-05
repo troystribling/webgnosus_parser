@@ -70,7 +70,12 @@ delete(RootUrl) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_sites)])).
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_sites)]));
+
+%% find specified record to database
+find(RootUrl) ->
+    {atomic, Result} = webgnosus_dbi:read_row({laconica_sites, RootUrl}),
+    Result.
 
 %%--------------------------------------------------------------------
 %% Func: count/0
