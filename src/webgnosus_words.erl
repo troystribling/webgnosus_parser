@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
-%%% webgnosus word processing utilities
+%%% webgnosus word model
 %%%-------------------------------------------------------------------
--module(webgnosus_words).
+-module(webgnosus_word_model).
 
 %% API
 -export([
