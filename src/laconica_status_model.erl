@@ -167,22 +167,34 @@ latest({site, Site}) ->
 
 %% return latest count of statuses
 latest({count, Count}) ->      
-    webgnosus_dbi:map(
+    Result = webgnosus_dbi:map(
         fun(S, Late) ->  
             later(S, Late, Count)
         end, 
         [], 
-        qlc:q([S || S <- mnesia:table(laconica_statuses)]));
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])),
+    lists:map(
+        fun(R) ->
+            {_, Status} = R,
+            Status
+         end,
+         Result);
 
 %% return latest count of statuses for specified site
 latest({{site, Site}, {count, Count}}) ->      
-    webgnosus_dbi:map(
+    Result = webgnosus_dbi:map(
         fun(S, Late) ->  
             later(S, Late, Count)
         end, 
         [], 
-        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
-
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])),
+    lists:map(
+        fun(R) ->
+            {_, Status} = R,
+            Status
+         end,
+         Result).
+    
 %%====================================================================
 %% Internal functions
 %%====================================================================        
@@ -260,11 +272,11 @@ text_contains(S, R) ->
 %% Description: if status is later add to list.
 %%--------------------------------------------------------------------
 update_later_list(SSecs, S, Late) ->
-    {LatestSecs, _} ,
+    {OldestSecs, _} = hd(Late),
     if
-        SSecs >= LatestSecs ->
-            gb_trees:insert(SSecs, S, Late),
-            gb_trees:take_smallest(Late);
+        SSecs > OldestSecs ->
+            [_ | NewLate] = lists:keysort(1, [{SSecs, S} | Late]),
+            NewLate;
         true ->
             Late
     end.
