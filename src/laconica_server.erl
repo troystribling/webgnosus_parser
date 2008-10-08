@@ -195,7 +195,7 @@ do_public_timeline(Sessions) ->
     SessionList = gb_trees:to_list(Sessions),
     case length(SessionList) of
       0 -> webgnosus_events:warning(["call open_session before retrieving public timeline."]), error;
-      _ -> [gen_server:cast(InterfacePid, public_timeline)|| {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
+      _ -> [gen_server:cast(InterfacePid, public_timeline) || {_Url, {InterfacePid, _CollectorPid}} <- SessionList]
     end.
 
 %%--------------------------------------------------------------------

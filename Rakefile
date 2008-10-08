@@ -30,6 +30,12 @@ task :shell => [:compile] do
     sh("erl -boot start_sasl -sname #{START_MODULE}_shell -pa #{PWD}/ebin  #{PWD}/src -run #{START_MODULE} init_shell -mnesia dir '\"#{MNESIA_DIR}\"'")
 end
 
+desc "attach to application shell"
+task :attach => [] do
+    sh("erl -sname #{START_MODULE}_shell -remsh #{START_MODULE}")
+end
+
+
 desc "open up a shell and start collector" 
 task :collect => [:compile] do
     sh("erl -boot start_sasl -config src/#{START_MODULE} -sname #{START_MODULE} -pa #{PWD}/ebin #{PWD}/src -run #{START_MODULE} start -mnesia dir '\"#{MNESIA_DIR}\"'")

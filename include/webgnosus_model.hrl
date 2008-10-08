@@ -10,3 +10,11 @@
         document_frequency
     }
 ).
+
+%% webgnosus dictionary
+-record(webgnosus_dictionary, 
+    {
+        word,
+        type
+    }
+).
