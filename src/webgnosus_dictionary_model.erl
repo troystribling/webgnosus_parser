@@ -11,6 +11,7 @@
           write/1,
           delete/1,
           find/1,
+          load/0,
           count/0,
           key/1
        ]).
@@ -29,7 +30,7 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(webgnosus_dictionary, [{attributes, record_info(fields, webgnosus_dictionary)}, {disc_only_copies, [node()]}]).
+    webgnosus_dbi:create_table(webgnosus_dictionary, [{attributes, record_info(fields, webgnosus_dictionary)}, {disc_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
@@ -44,6 +45,13 @@ delete_table() ->
 %%--------------------------------------------------------------------
 clear_table() ->
     webgnosus_dbi:clear_table(webgnosus_dictionary).
+
+%%--------------------------------------------------------------------
+%% Func: load/0
+%% Description: load text dump of table
+%%--------------------------------------------------------------------
+load() ->
+    mnesia:load_textfile("webgnosus_dictionary.dat").
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods
