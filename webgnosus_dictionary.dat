@@ -6,6 +6,8 @@
 
 {webgnosus_dictionary, ":\\s+",     punctuation}.
 {webgnosus_dictionary, ";\\s+",     punctuation}.
+{webgnosus_dictionary, "\\.\\s+",   punctuation}.
+{webgnosus_dictionary, "\\.$",      punctuation}.
 {webgnosus_dictionary, "\\,\\s+",   punctuation}.
 {webgnosus_dictionary, "\\)\\s+",   punctuation}.
 {webgnosus_dictionary, "\\s+\\(",   punctuation}.
@@ -18,21 +20,22 @@
 {webgnosus_dictionary, "\\!+",      punctuation}.
 {webgnosus_dictionary, "\\*+",      punctuation}.
 {webgnosus_dictionary, "--+",       punctuation}.
-{webgnosus_dictionary, "\\;\\)",    smiley}.
-{webgnosus_dictionary, "\\:\\)",    smiley}.
-{webgnosus_dictionary, "\\:-\\)",   smiley}.
-{webgnosus_dictionary, "\\;-\\)",   smiley}.
-{webgnosus_dictionary, "\\^\\_\\^", smiley}.
-{webgnosus_dictionary, "\\^\\.\\^", smiley}.
-{webgnosus_dictionary, "8\\^\\)",   smiley}.
-{webgnosus_dictionary, "8-\\)",     smiley}.
-{webgnosus_dictionary, "\\:O",      smiley}.
-{webgnosus_dictionary, "\\;P",      smiley}.
-{webgnosus_dictionary, "\\:P",      smiley}.
-{webgnosus_dictionary, "\\:-P",     smiley}.
-{webgnosus_dictionary, "\\;-P",     smiley}.
-{webgnosus_dictionary, "\\:\\(",    smiley}.
-{webgnosus_dictionary, "\\:-\\(",   smiley}.
+{webgnosus_dictionary, ";\\)",       smiley}.
+{webgnosus_dictionary, ":\\)",       smiley}.
+{webgnosus_dictionary, ":-\\)",      smiley}.
+{webgnosus_dictionary, ";-\\)",      smiley}.
+{webgnosus_dictionary, "\\^\\_\\^",  smiley}.
+{webgnosus_dictionary, "\\^\\.\\^",  smiley}.
+{webgnosus_dictionary, "8\\^\\)",    smiley}.
+{webgnosus_dictionary, "8-\\)",      smiley}.
+{webgnosus_dictionary, ":O",         smiley}.
+{webgnosus_dictionary, ";P",         smiley}.
+{webgnosus_dictionary, ":P",         smiley}.
+{webgnosus_dictionary, ":-P",        smiley}.
+{webgnosus_dictionary, ";-P",        smiley}.
+{webgnosus_dictionary, ":\\(",       smiley}.
+{webgnosus_dictionary, ":-\\(",      smiley}.
+{webgnosus_dictionary, "";\\*\\(",   smiley}.
 
 
 

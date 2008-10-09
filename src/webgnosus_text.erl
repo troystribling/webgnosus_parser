@@ -43,8 +43,34 @@ pad_punctuation(Punc, Doc) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: remove new lines
-%% Description: .
+%% Func: remove_smiley/2
+%% Description: remove smileys from document
+%%--------------------------------------------------------------------
+remove_smiley(Smiley, Doc) ->    
+    case regexp:gsub(Doc, Smiley, "") of
+        {ok, NewDoc, _} ->
+            NewDoc;
+        _ -> 
+            Doc
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: replace_at_position/3
+%% Description: remove smileys from document
+%%--------------------------------------------------------------------
+replace_at_position({Pos, Length}, Rep, Doc) ->    
+    {Head, Tail} = lists:split(Pos - 1, Doc),
+io:format("Head: ~p~n", [Head]),
+io:format("Tail: ~p~n", [Tail]),
+    NewTail = lists:sublist(Tail, Length + 1, length(Tail) - Length),
+io:format("NewTail: ~p~n", [NewTail]),
+    Head ++ Rep ++ NewTail.
+
+
+%%--------------------------------------------------------------------
+%% Func: pad single quotes
+%% Description: must determine difference between single quotes and
+%%              apostraphes.
 %%--------------------------------------------------------------------
 remove_new_lines(Doc) ->    
     case regexp:gsub(Doc, "\\n", " ") of
@@ -55,10 +81,10 @@ remove_new_lines(Doc) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: split/1
-%% Description: return list of document words.
+%% Func: tokens/1
+%% Description: return list of document words and puctuation.
 %%--------------------------------------------------------------------
-split(Doc) ->
+tokens(Doc) ->
     case regexp:split(Doc, "\s+") of
         {ok, NewDoc} ->
             NewDoc;
