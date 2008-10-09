@@ -60,11 +60,8 @@ remove_smiley(Smiley, Doc) ->
 %%--------------------------------------------------------------------
 replace_at_position({Pos, Length}, Rep, Doc) ->    
     {Head, Tail} = lists:split(Pos - 1, Doc),
-io:format("Head: ~p~n", [Head]),
-io:format("Tail: ~p~n", [Tail]),
     NewTail = lists:sublist(Tail, Length + 1, length(Tail) - Length),
-io:format("NewTail: ~p~n", [NewTail]),
-    Head ++ Rep ++ NewTail.
+    lists:concat([Head, Rep, NewTail]).
 
 
 %%--------------------------------------------------------------------
