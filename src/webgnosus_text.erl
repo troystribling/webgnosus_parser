@@ -66,8 +66,8 @@ replace_at_position({Pos, Length}, Rep, Doc) ->
 
 %%--------------------------------------------------------------------
 %% Func: pad_single_quotes/1
-%% Description: must determine difference between single quotes and
-%%              apostraphes.
+%% Description: disambiguate single quotes and
+%%              apostraphes and pad single quotes with spaces.
 %%--------------------------------------------------------------------
 pad_single_quotes(Doc) ->   
     {_, Right} = regexp:matches(Doc, "\\'\\s"),
@@ -78,10 +78,22 @@ pad_single_quotes(Doc) ->
 %% Func: match_single_quote_pairs/3
 %% Description: match single quote pairs and pad with spaces.
 %%--------------------------------------------------------------------
+match_single_quote_pairs([], [], Doc) ->   
+    Doc;
+
+match_single_quote_pairs([Rh | _Rt], [], Doc) ->   
+    Doc;
+
 match_single_quote_pairs(Right, Left, Doc) ->   
-    {_, Right} = regexp:matches(Doc, "\\'\\s"),
-    {_, Left}  = regexp:matches(Doc, "\\s\\'"),
-    match_single_quote_pairs(Right, Left, Doc).
+    [Rh | Rt] = Right,
+    [Lh | Lt]  = Left,
+    if 
+        Rh < Lh ->
+            match_single_quote_pairs(Rt, Left, Doc);
+        true    ->
+            match_single_quote_pairs(Rt, Lt, replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc)))
+    end.
+    
 
 
 %%--------------------------------------------------------------------
