@@ -65,9 +65,28 @@ replace_at_position({Pos, Length}, Rep, Doc) ->
 
 
 %%--------------------------------------------------------------------
-%% Func: pad single quotes
+%% Func: pad_single_quotes/1
 %% Description: must determine difference between single quotes and
 %%              apostraphes.
+%%--------------------------------------------------------------------
+pad_single_quotes(Doc) ->   
+    {_, Right} = regexp:matches(Doc, "\\'\\s"),
+    {_, Left}  = regexp:matches(Doc, "\\s\\'"),
+    match_single_quote_pairs(Right, Left, Doc).
+
+%%--------------------------------------------------------------------
+%% Func: match_single_quote_pairs/3
+%% Description: match single quote pairs and pad with spaces.
+%%--------------------------------------------------------------------
+match_single_quote_pairs(Right, Left, Doc) ->   
+    {_, Right} = regexp:matches(Doc, "\\'\\s"),
+    {_, Left}  = regexp:matches(Doc, "\\s\\'"),
+    match_single_quote_pairs(Right, Left, Doc).
+
+
+%%--------------------------------------------------------------------
+%% Func: remove_new_lines/1
+%% Description: remove new line chracters from document.
 %%--------------------------------------------------------------------
 remove_new_lines(Doc) ->    
     case regexp:gsub(Doc, "\\n", " ") of

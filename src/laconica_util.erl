@@ -20,7 +20,7 @@ date_to_rfc1123(Date) ->
     case regexp:split(Date, " +") of
         {ok, D} ->      
             httpd_util:convert_request_date(lists:nth(1,D) ++ ", " ++ lists:nth(3,D) ++ " " ++ lists:nth(2,D) ++ " " ++
-                                             lists:nth(6,D) ++ " " ++ time_to_rfc1123(lists:nth(4,D)));
+                                            lists:nth(6,D) ++ " " ++ time_to_rfc1123(lists:nth(4,D)));
          X  -> X
     end.
 
