@@ -70,61 +70,68 @@ replace_at_position({Pos, Length}, Rep, Doc) ->
 %%              apostraphes and pad single quotes with spaces.
 %%--------------------------------------------------------------------
 pad_single_quotes(Doc) ->   
-    {_, Right} = regexp:matches(Doc, "\\'\\s"),
-    {_, Left}  = regexp:matches(Doc, "\\s\\'"),
-    match_single_quote_pairs(Right, Left, Doc).
+    {_, Right} = regexp:matches(Doc, "\\'\\s|\\'$"),
+    {_, Left}  = regexp:matches(Doc, "\\s\\'|^\\'"),
+    find_single_quote_pairs_and_pad(Right, Left, Doc).
 
 %%--------------------------------------------------------------------
-%% Func: match_single_quote_pairs/3
+%% Func: pad_single_quote_pairs/3
 %% Description: match single quote pairs and pad with spaces.
 %%--------------------------------------------------------------------
-match_single_quote_pairs([], [], Doc) ->   
+find_single_quote_pairs_and_pad([], [], Doc) ->   
     Doc;
 
-match_single_quote_pairs(_Right, [], Doc) ->   
+find_single_quote_pairs_and_pad(_Right, [], Doc) ->   
     Doc;
 
-match_single_quote_pairs([], _Left, Doc) ->   
+find_single_quote_pairs_and_pad([], _Left, Doc) ->   
     Doc;
 
-match_single_quote_pairs(Right, Left, Doc) ->   
-    [Rh | Rt] = Right,
-    [Lh | Lt]  = Left,
-    if 
-        is_right_apostrophe(Rh, Lh) ->
-            match_single_quote_pairs(Rt, Left, Doc);
-        is_left_apostrophe(Rh, Lt) ->
-            match_single_quote_pairs(Right, Lt, Doc);            
-        true    ->
-            match_single_quote_pairs(Rt, Lt, replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc)))
+find_single_quote_pairs_and_pad([Rh | Rt] = Right, [Lh | Lt] = Left, Doc) ->   
+    case is_apostrophe(Rh, Lh, Lt)  of
+        right  ->
+            find_single_quote_pairs_and_pad(Rt, Left, Doc);
+        left   -> 
+            find_single_quote_pairs_and_pad(Right, Lt, Doc);            
+        quotes ->
+            find_single_quote_pairs_and_pad(
+                update_single_quote_match_position(Rt), 
+                update_single_quote_match_position(Lt), 
+                replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc)))
     end.
     
 
 %%--------------------------------------------------------------------
-%% Func: is_right_apostrophe/2
-%% Description: true if Rh is an apostrophe.
+%% Func: update_single_quote_match_position/1
+%% Description: 
 %%--------------------------------------------------------------------
-is_right_apostrophe({RhPos, _}, {LhPos, _}) ->   
+update_single_quote_match_position(PosList) ->
+    lists:map(
+        fun({Pos, Length}) -> 
+            {Pos + 2, Length}                 
+        end, 
+        PosList).
+
+%%--------------------------------------------------------------------
+%% Func: is_apostrophe/3
+%% Description: determine apostraphe type or quotes .
+%%--------------------------------------------------------------------
+is_apostrophe({RhPos, _}, {LhPos, _}, []) ->   
     if
         RhPos < LhPos -> 
-            true;
+            right;
         true -> 
-            false
-    end.
+            quotes
+    end;
 
-%%--------------------------------------------------------------------
-%% Func: is_left_apostrophe/3
-%% Description: true if Lh is an apostrophe.
-%%--------------------------------------------------------------------
-is_left_apostrophe(_Rh, []) ->   
-    false;
-
-is_left_apostrophe({RhPos, _}, [{Lh2Pos} | _]) ->   
+is_apostrophe({RhPos, _}, {LhPos, _}, [{Lh2Pos, _} | _]) ->   
     if
+        RhPos < LhPos -> 
+            right;
         Lh2Pos < RhPos -> 
-            true;
-        true -> 
-            false
+            left;
+        true ->
+            quotes
     end.
 
 %%--------------------------------------------------------------------
