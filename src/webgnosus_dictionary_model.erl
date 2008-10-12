@@ -13,7 +13,10 @@
           find/1,
           load/0,
           count/0,
-          key/1
+          key/1,
+          regexp/1,
+          word/1,
+          type/1
        ]).
 
 %% include
@@ -108,6 +111,18 @@ find(smiley) ->
 %%--------------------------------------------------------------------
 count() ->    
     webgnosus_dbi:count(webgnosus_dictionary).
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% attributes
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+regexp(#webgnosus_dictionary{regexp = RegExp}) ->    
+    RegExp.
+
+word(#webgnosus_dictionary{word = Word}) ->    
+    Word.
+
+type(#webgnosus_dictionary{type = Type}) ->    
+    Type.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods

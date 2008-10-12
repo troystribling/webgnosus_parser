@@ -18,13 +18,7 @@
 %% Description: prepare text for processing.
 %%--------------------------------------------------------------------
 prepare(Doc) ->
-    remove_new_lines(
-        lists:foldl(
-            fun(P, D) -> 
-                pad_punctuation(P, D) 
-            end, 
-            Doc, 
-            webgnosis_dictionary_model:find(punctuation))).
+    remove_new_lines(pad_punctuation(Doc)).
 
 %%====================================================================
 %%% Internal functions
@@ -32,10 +26,23 @@ prepare(Doc) ->
 %%--------------------------------------------------------------------
 %% Func: pad_punctuation/1
 %% Description: place spaces before and after puctutaion for post 
+%%              processing for all punctuation symbols.
+%%--------------------------------------------------------------------
+pad_punctuation(Doc) ->    
+    lists:foldl(
+        fun(P, D) -> 
+            pad_punctuation(P, D) 
+        end, 
+        Doc, 
+        webgnosus_dictionary_model:find(punctuation)).
+
+%%--------------------------------------------------------------------
+%% Func: pad_punctuation/2
+%% Description: place spaces before and after puctutaion for post 
 %%              processing.
 %%--------------------------------------------------------------------
-pad_punctuation(Punc, Doc) ->    
-    case regexp:gsub(Doc, Punc, " " ++ Punc ++ " ") of
+pad_punctuation(P, Doc) ->    
+    case regexp:gsub(Doc, webgnosus_dictionary_model:regexp(P), " " ++ webgnosus_dictionary_model:word(P) ++ " ") of
         {ok, NewDoc, _} ->
             NewDoc;
         _ -> 

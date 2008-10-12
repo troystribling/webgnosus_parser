@@ -15,6 +15,7 @@
 -record(webgnosus_dictionary, 
     {
         word,
+        regexp,
         type
     }
 ).
