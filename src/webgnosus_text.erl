@@ -42,8 +42,6 @@ pad_punctuation(Doc) ->
 %%              processing.
 %%--------------------------------------------------------------------
 pad_punctuation(P, Doc) -> 
-io:format("~p~n", [webgnosus_punctuation_model:regexp(P)]),   
-io:format("~p~n", [webgnosus_punctuation_model:word(P)]),   
     case regexp:gsub(Doc, webgnosus_punctuation_model:regexp(P), " " ++ webgnosus_punctuation_model:word(P) ++ " ") of
         {ok, NewDoc, _} ->
             NewDoc;

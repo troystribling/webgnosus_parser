@@ -1,39 +1,38 @@
 {tables, 
   [
-    {webgnosus_punctuation, [{attributes, [regexp, word, type]}]}
+    {webgnosus_punctuation, [{attributes, [ word, regexp, type]}]}
   ]
 }.
 
-{webgnosus_punctuation, ":\\s+",    ":",    punctuation}.
-{webgnosus_punctuation, ";\\s+",    ";",    punctuation}.
-{webgnosus_punctuation, "\\.\\s+",  ".",    punctuation}.
-{webgnosus_punctuation, "\\.$",     ".",    punctuation}.
-{webgnosus_punctuation, "\\,\\s+",  ",",    punctuation}.
-{webgnosus_punctuation, "\\)\\s+",  ")",    punctuation}.
-{webgnosus_punctuation, "\\s+\\(",  "(",    punctuation}.
-{webgnosus_punctuation, "\\.\\.+",  "...",  punctuation}.
-{webgnosus_punctuation, "\\\"\\s+", "\"",   punctuation}.
-{webgnosus_punctuation, "\\s+\\\"", "\"",   punctuation}.
-{webgnosus_punctuation, "\\?+",     "?",    punctuation}.
-{webgnosus_punctuation, "\\!+",     "!",    punctuation}.
-{webgnosus_punctuation, "\\*+",     "*",    punctuation}.
-{webgnosus_punctuation, "--+",      "---",  punctuation}.
-{webgnosus_punctuation, ";\\)",      ";)",   smiley}.
-{webgnosus_punctuation, ":\\)",      ":)",   smiley}.
-{webgnosus_punctuation, ":-\\)",     ":-)",  smiley}.
-{webgnosus_punctuation, ";-\\)",     ";-)",  smiley}.
-{webgnosus_punctuation, "\\^\\_\\^", "^_^",  smiley}.
-{webgnosus_punctuation, "\\^\\.\\^", "^.^",  smiley}.
-{webgnosus_punctuation, "8\\^\\)",    "8^)", smiley}.
-{webgnosus_punctuation, "8-\\)",      "8-)", smiley}.
-{webgnosus_punctuation, ":O",         ":O",  smiley}.
-{webgnosus_punctuation, ";P",         ";P",  smiley}.
-{webgnosus_punctuation, ":P",         ":P",  smiley}.
-{webgnosus_punctuation, ":-P",        ":-P", smiley}.
-{webgnosus_punctuation, ";-P",        ";-P", smiley}.
-{webgnosus_punctuation, ":\\(",       ":(",  smiley}.
-{webgnosus_punctuation, ":-\\(",      ":-(", smiley}.
-{webgnosus_punctuation, ";\\*\\(",    ";*(", smiley}.
+{webgnosus_punctuation, ".",     "\\.\\s+",      punctuation}.
+{webgnosus_punctuation, ".",     "\\.$",         punctuation}.
+{webgnosus_punctuation, "?",     "\\?+",         punctuation}.
+{webgnosus_punctuation, "!",     "\\!+",         punctuation}.
+{webgnosus_punctuation, ",",     "\\,\\s+",      punctuation}.
+{webgnosus_punctuation, "...",   "\\.\\.+",      punctuation}.
+{webgnosus_punctuation, ":",     ":\\s+",        punctuation}.
+{webgnosus_punctuation, ";",     ";\\s+",        punctuation}.
+{webgnosus_punctuation, ")",     "\\)+",         punctuation}.
+{webgnosus_punctuation, "(",     "\\(+",         punctuation}.
+{webgnosus_punctuation, "\"",    "\\\"",         punctuation}.
+{webgnosus_punctuation, "*",     "\\*+",         punctuation}.
+{webgnosus_punctuation, "---",   "--+",          punctuation}.
+{webgnosus_punctuation, ";)",    ";\\)",         smiley}.
+{webgnosus_punctuation, ":)",    ":\\)",         smiley}.
+{webgnosus_punctuation, ":-)",   ":-\\)",        smiley}.
+{webgnosus_punctuation, ";-)",   ";-\\)",        smiley}.
+{webgnosus_punctuation, "^_^",   "\\^\\_\\^",    smiley}.
+{webgnosus_punctuation, "^.^",   "\\^\\.\\^",    smiley}.
+{webgnosus_punctuation, "8^)",   "8\\^\\)",      smiley}.
+{webgnosus_punctuation, "8-)",   "8-\\)",        smiley}.
+{webgnosus_punctuation, ":O",    ":O",           smiley}.
+{webgnosus_punctuation, ";P",    ";P",           smiley}.
+{webgnosus_punctuation, ":P",    ":P",           smiley}.
+{webgnosus_punctuation, ":-P",   ":-P",          smiley}.
+{webgnosus_punctuation, ";-P",   ";-P",          smiley}.
+{webgnosus_punctuation, ":(",    ":\\(",         smiley}.
+{webgnosus_punctuation, ":-(",   ":-\\(",        smiley}.
+{webgnosus_punctuation, ";*(",   ";\\*\\(",      smiley}.
 
 
 

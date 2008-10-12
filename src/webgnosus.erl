@@ -122,6 +122,7 @@ do_create_tables() ->
     laconica_status_model:create_table(),
     laconica_user_model:create_table(),
     webgnosus_dictionary_model:create_table(),
+    webgnosus_punctuation_model:create_table(),
     webgnosus_word_model:create_table().
     
 %%--------------------------------------------------------------------
@@ -133,6 +134,7 @@ do_delete_tables() ->
     laconica_status_model:delete_table(),
     laconica_user_model:delete_table(),
     webgnosus_dictionary_model:delete_table(),
+    webgnosus_punctuation_model:delete_table(),
     webgnosus_word_model:delete_table().
     
 %%--------------------------------------------------------------------
@@ -144,6 +146,7 @@ do_clear_tables() ->
     laconica_status_model:clear_tables(),
     laconica_user_model:clear_tables(),
     webgnosus_dictionary_model:clear_tables(),
+    webgnosus_punctuation_model:clear_tables(),
     webgnosus_word_model:clear_tables().
 
 %%--------------------------------------------------------------------
@@ -151,7 +154,8 @@ do_clear_tables() ->
 %% Description: wait for tables to initialize
 %%--------------------------------------------------------------------
 wait_for_tables() ->
-    case mnesia:wait_for_tables([laconica_sites, laconica_statuses, laconica_users, webgnosus_dictionary, webgnosus_words], 20000) of
+    case mnesia:wait_for_tables([laconica_sites, laconica_statuses, laconica_users, webgnosus_dictionary, 
+                                 webgnosus_words, webgnosus_punctuation], 20000) of
         {timeout, BadTables} -> webgnosus_events:warning({mnesia_start_timeout, BadTables}); 
         {error, Reason} -> webgnosus_events:warning({mnesia_start_error, Reason});
         _ -> webgnosus_events:message({started, mnesia}) 

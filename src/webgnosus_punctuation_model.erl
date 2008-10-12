@@ -33,29 +33,29 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(webgnosus_puctuation, 
-        [{attributes, record_info(fields, webgnosus_puctuation)}, {disc_copies, [node()]}, {type, bag}]).
+    webgnosus_dbi:create_table(webgnosus_punctuation, 
+        [{attributes, record_info(fields, webgnosus_punctuation)}, {disc_copies, [node()]}, {type, bag}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    webgnosus_dbi:delete_table(webgnosus_puctuation).
+    webgnosus_dbi:delete_table(webgnosus_punctuation).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    webgnosus_dbi:clear_table(webgnosus_puctuation).
+    webgnosus_dbi:clear_table(webgnosus_punctuation).
 
 %%--------------------------------------------------------------------
 %% Func: load/0
 %% Description: load text dump of table
 %%--------------------------------------------------------------------
 load() ->
-    mnesia:load_textfile("webgnosus_puctuation.dat").
+    mnesia:load_textfile("webgnosus_punctuation.dat").
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods
@@ -64,14 +64,14 @@ load() ->
 %% Func: write/1
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
-write(R) when is_record(R, webgnosus_puctuation) ->
+write(R) when is_record(R, webgnosus_punctuation) ->
     webgnosus_dbi:write_row(R);
 
 write({punctuation, Word}) ->
-    webgnosus_dbi:write_row({webgnosus_puctuation, Word, punctuation});
+    webgnosus_dbi:write_row({webgnosus_punctuation, Word, punctuation});
 
 write({smiley, Word}) ->
-    webgnosus_dbi:write_row({webgnosus_puctuation, Word, smiley});
+    webgnosus_dbi:write_row({webgnosus_punctuation, Word, smiley});
 
 write(_) ->
     {atomic, error}.
@@ -81,7 +81,7 @@ write(_) ->
 %% Description: delete specified record to database
 %%--------------------------------------------------------------------
 delete(Word) ->
-    webgnosus_dbi:delete_row({webgnosus_puctuation, Word}).
+    webgnosus_dbi:delete_row({webgnosus_punctuation, Word}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -89,33 +89,33 @@ delete(Word) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation)]));
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_punctuation)]));
 
 %% find all punctuation
 find(punctuation) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation), W#webgnosus_puctuation.type =:= punctuation]));
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_punctuation), W#webgnosus_punctuation.type =:= punctuation]));
 
 %% find all smileys
 find(smiley) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation), W#webgnosus_puctuation.type =:= smiley])).
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_punctuation), W#webgnosus_punctuation.type =:= smiley])).
 
 %%--------------------------------------------------------------------
 %% Func: count/0
 %% Description: return row count
 %%--------------------------------------------------------------------
 count() ->    
-    webgnosus_dbi:count(webgnosus_puctuation).
+    webgnosus_dbi:count(webgnosus_punctuation).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-regexp(#webgnosus_puctuation{regexp = RegExp}) ->    
+regexp(#webgnosus_punctuation{regexp = RegExp}) ->    
     RegExp.
 
-word(#webgnosus_puctuation{word = Word}) ->    
+word(#webgnosus_punctuation{word = Word}) ->    
     Word.
 
-type(#webgnosus_puctuation{type = Type}) ->    
+type(#webgnosus_punctuation{type = Type}) ->    
     Type.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

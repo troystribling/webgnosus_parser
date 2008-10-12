@@ -20,7 +20,7 @@
 ).
 
 %% webgnosus dictionary
--record(webgnosus_puctuation, 
+-record(webgnosus_punctuation, 
     {
         word,
         regexp,

@@ -1,0 +1,11 @@
+{tables, 
+  [
+    {webgnosus_dictionary, [{attributes, [ word, language]}]}
+  ]
+}.
+
+{webgnosus_dictionary, "the",     english}.
+
+
+
+
