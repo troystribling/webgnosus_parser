@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% model interface for webgnosus word database
+%%% model interface for webgnosus punctuation database
 %%%-------------------------------------------------------------------
 -module(webgnosus_punctuation_model).
 

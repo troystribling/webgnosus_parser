@@ -34,15 +34,17 @@ pad_punctuation(Doc) ->
             pad_punctuation(P, D) 
         end, 
         Doc, 
-        webgnosus_dictionary_model:find(punctuation)).
+        webgnosus_punctuation_model:find(punctuation)).
 
 %%--------------------------------------------------------------------
 %% Func: pad_punctuation/2
 %% Description: place spaces before and after puctutaion for post 
 %%              processing.
 %%--------------------------------------------------------------------
-pad_punctuation(P, Doc) ->    
-    case regexp:gsub(Doc, webgnosus_dictionary_model:regexp(P), " " ++ webgnosus_dictionary_model:word(P) ++ " ") of
+pad_punctuation(P, Doc) -> 
+io:format("~p~n", [webgnosus_punctuation_model:regexp(P)]),   
+io:format("~p~n", [webgnosus_punctuation_model:word(P)]),   
+    case regexp:gsub(Doc, webgnosus_punctuation_model:regexp(P), " " ++ webgnosus_punctuation_model:word(P) ++ " ") of
         {ok, NewDoc, _} ->
             NewDoc;
         _ -> 

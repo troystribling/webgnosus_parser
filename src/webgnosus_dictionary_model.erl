@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% model interface for webgnosus word database
+%%% model interface for webgnosus dictionary database
 %%%-------------------------------------------------------------------
 -module(webgnosus_dictionary_model).
 
@@ -14,9 +14,8 @@
           load/0,
           count/0,
           key/1,
-          regexp/1,
           word/1,
-          type/1
+          language/1
        ]).
 
 %% include
@@ -90,7 +89,7 @@ find(all) ->
 
 %% find all english words
 find(english) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_dictionary), W#webgnosus_dictionary.language =:= english]));
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_dictionary), W#webgnosus_dictionary.language =:= english])).
 
 %%--------------------------------------------------------------------
 %% Func: count/0
