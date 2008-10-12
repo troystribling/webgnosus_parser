@@ -50,6 +50,19 @@ pad_punctuation(P, Doc) ->
     end.
 
 %%--------------------------------------------------------------------
+%% Func: pad_punctuation/1
+%% Description: place spaces before and after puctutaion for post 
+%%              processing for all punctuation symbols.
+%%--------------------------------------------------------------------
+remove_smiley(Doc) ->    
+    lists:foldl(
+        fun(P, D) -> 
+            remove_smiley(P, D) 
+        end, 
+        Doc, 
+        webgnosus_punctuation_model:find(smiley)).
+
+%%--------------------------------------------------------------------
 %% Func: remove_smiley/2
 %% Description: remove smileys from document
 %%--------------------------------------------------------------------
@@ -102,22 +115,31 @@ find_single_quote_pairs_and_pad([Rh | Rt] = Right, [Lh | Lt] = Left, Doc) ->
             find_single_quote_pairs_and_pad(Right, Lt, Doc);            
         quotes ->
             find_single_quote_pairs_and_pad(
-                update_single_quote_match_position(Rt), 
-                update_single_quote_match_position(Lt), 
+                update_single_quote_match_position(Rt, Lh), 
+                update_single_quote_match_position(Lt, Lh), 
                 replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc)))
     end.
     
 
 %%--------------------------------------------------------------------
 %% Func: update_single_quote_match_position/1
-%% Description: 
+%% Description: account for spaces placed in quotes
 %%--------------------------------------------------------------------
-update_single_quote_match_position(PosList) ->
-    lists:map(
-        fun({Pos, Length}) -> 
-            {Pos + 2, Length}                 
-        end, 
-        PosList).
+update_single_quote_match_position(PosList, {LhPos, _}) ->
+    if 
+        LhPos == 1 ->
+            lists:map(
+                fun({Pos, Length}) -> 
+                    {Pos + 3, Length}                 
+                end, 
+                PosList);
+        true ->
+            lists:map(
+                fun({Pos, Length}) -> 
+                    {Pos + 2, Length}                 
+                end, 
+                PosList)
+    end.
 
 %%--------------------------------------------------------------------
 %% Func: is_apostrophe/3
