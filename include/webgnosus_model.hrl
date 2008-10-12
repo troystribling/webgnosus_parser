@@ -15,6 +15,14 @@
 -record(webgnosus_dictionary, 
     {
         word,
+        language
+    }
+).
+
+%% webgnosus dictionary
+-record(webgnosus_puctuation, 
+    {
+        word,
         regexp,
         type
     }

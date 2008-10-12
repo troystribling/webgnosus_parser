@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% model interface for webgnosus word database
 %%%-------------------------------------------------------------------
--module(webgnosus_dictionary_model).
+-module(webgnosus_punctuation_model).
 
 %% API
 -export([
@@ -33,29 +33,29 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(webgnosus_dictionary, 
-        [{attributes, record_info(fields, webgnosus_dictionary)}, {disc_copies, [node()]}]).
+    webgnosus_dbi:create_table(webgnosus_puctuation, 
+        [{attributes, record_info(fields, webgnosus_puctuation)}, {disc_copies, [node()]}, {type, bag}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    webgnosus_dbi:delete_table(webgnosus_dictionary).
+    webgnosus_dbi:delete_table(webgnosus_puctuation).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    webgnosus_dbi:clear_table(webgnosus_dictionary).
+    webgnosus_dbi:clear_table(webgnosus_puctuation).
 
 %%--------------------------------------------------------------------
 %% Func: load/0
 %% Description: load text dump of table
 %%--------------------------------------------------------------------
 load() ->
-    mnesia:load_textfile("webgnosus_dictionary.dat").
+    mnesia:load_textfile("webgnosus_puctuation.dat").
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods
@@ -64,11 +64,14 @@ load() ->
 %% Func: write/1
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
-write(R) when is_record(R, webgnosus_dictionary) ->
+write(R) when is_record(R, webgnosus_puctuation) ->
     webgnosus_dbi:write_row(R);
 
-write({english, Word}) ->
-    webgnosus_dbi:write_row({webgnosus_dictionary, Word, english});
+write({punctuation, Word}) ->
+    webgnosus_dbi:write_row({webgnosus_puctuation, Word, punctuation});
+
+write({smiley, Word}) ->
+    webgnosus_dbi:write_row({webgnosus_puctuation, Word, smiley});
 
 write(_) ->
     {atomic, error}.
@@ -78,7 +81,7 @@ write(_) ->
 %% Description: delete specified record to database
 %%--------------------------------------------------------------------
 delete(Word) ->
-    webgnosus_dbi:delete_row({webgnosus_dictionary, Word}).
+    webgnosus_dbi:delete_row({webgnosus_puctuation, Word}).
 
 %%--------------------------------------------------------------------
 %% Func: find/1
@@ -86,27 +89,34 @@ delete(Word) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_dictionary)]));
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation)]));
 
-%% find all english words
-find(english) ->
-    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_dictionary), W#webgnosus_dictionary.language =:= english]));
+%% find all punctuation
+find(punctuation) ->
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation), W#webgnosus_puctuation.type =:= punctuation]));
+
+%% find all smileys
+find(smiley) ->
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_puctuation), W#webgnosus_puctuation.type =:= smiley])).
 
 %%--------------------------------------------------------------------
 %% Func: count/0
 %% Description: return row count
 %%--------------------------------------------------------------------
 count() ->    
-    webgnosus_dbi:count(webgnosus_dictionary).
+    webgnosus_dbi:count(webgnosus_puctuation).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-word(#webgnosus_dictionary{word = Word}) ->    
+regexp(#webgnosus_puctuation{regexp = RegExp}) ->    
+    RegExp.
+
+word(#webgnosus_puctuation{word = Word}) ->    
     Word.
 
-language(#webgnosus_dictionary{language = Language}) ->    
-    Language.
+type(#webgnosus_puctuation{type = Type}) ->    
+    Type.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
