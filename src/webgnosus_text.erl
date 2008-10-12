@@ -90,13 +90,11 @@ replace_at_position({Pos, Length}, Rep, Doc) ->
 %%              apostraphes and pad single quotes with spaces.
 %%--------------------------------------------------------------------
 pad_single_quotes(Doc) ->   
-    {_, Right} = regexp:matches(Doc, "\\'\\s|\\'$"),
-    {_, Left}  = regexp:matches(Doc, "\\s\\'|^\\'"),
-    find_single_quote_pairs_and_pad(Right, Left, Doc).
+    PaddedDoc = lists:concat([" ", Doc, " "]),
+    {_, Right} = regexp:matches(PaddedDoc, "\\'\\s"),
+    {_, Left}  = regexp:matches(PaddedDoc, "\\s\\'"),
+    find_single_quote_pairs_and_pad(Right, Left, PaddedDoc).
 
-%%--------------------------------------------------------------------
-%% Func: pad_single_quote_pairs/3
-%% Description: match single quote pairs and pad with spaces.
 %%--------------------------------------------------------------------
 find_single_quote_pairs_and_pad([], [], Doc) ->   
     Doc;
@@ -107,43 +105,54 @@ find_single_quote_pairs_and_pad(_Right, [], Doc) ->
 find_single_quote_pairs_and_pad([], _Left, Doc) ->   
     Doc;
 
-find_single_quote_pairs_and_pad([Rh | Rt] = Right, [Lh | Lt] = Left, Doc) ->   
+find_single_quote_pairs_and_pad(Right, Left, Doc) ->   
+    if 
+        length(Right) == length(Left) ->
+            pad_matched_single_quote_pairs(Right, Left, Doc);
+        true ->
+            pad_mismatched_single_quote_pairs(Right, Left, Doc)
+    end.
+  
+%%--------------------------------------------------------------------
+pad_mismatched_single_quote_pairs([Rh | Rt] = Right, [Lh | Lt] = Left, Doc) ->   
     case is_apostrophe(Rh, Lh, Lt)  of
         right  ->
             find_single_quote_pairs_and_pad(Rt, Left, Doc);
         left   -> 
             find_single_quote_pairs_and_pad(Right, Lt, Doc);            
         quotes ->
-            find_single_quote_pairs_and_pad(
-                update_single_quote_match_position(Rt, Lh), 
-                update_single_quote_match_position(Lt, Lh), 
-                replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc)))
+            pad_matched_single_quote_pairs(Right, Left, Doc)
     end.
-    
 
 %%--------------------------------------------------------------------
-%% Func: update_single_quote_match_position/1
-%% Description: account for spaces placed in quotes
+pad_matched_single_quote_pairs([Rh | Rt], [Lh | Lt], Doc) ->   
+    find_single_quote_pairs_and_pad(
+        update_right_single_quote_match_position(Rt), 
+        update_left_single_quote_match_position(Lt, Rh), 
+        replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc))).
+
 %%--------------------------------------------------------------------
-update_single_quote_match_position(PosList, {LhPos, _}) ->
-    if 
-        LhPos == 1 ->
-            lists:map(
-                fun({Pos, Length}) -> 
-                    {Pos + 3, Length}                 
-                end, 
-                PosList);
+update_right_single_quote_match_position(PosList) ->
+    update_single_quote_match_position(PosList, 2).
+
+update_left_single_quote_match_position([], _) ->
+     [];
+
+update_left_single_quote_match_position([{Lh2Pos, _} | _] = PosList, {RhPos, _}) ->
+    if
+        Lh2Pos < RhPos -> 
+            update_single_quote_match_position(PosList, 1);
         true ->
-            lists:map(
-                fun({Pos, Length}) -> 
-                    {Pos + 2, Length}                 
-                end, 
-                PosList)
+            update_single_quote_match_position(PosList, 2)
     end.
 
-%%--------------------------------------------------------------------
-%% Func: is_apostrophe/3
-%% Description: determine apostraphe type or quotes .
+update_single_quote_match_position(PosList, OffSet) ->
+    lists:map(
+        fun({Pos, Length}) -> 
+            {Pos + OffSet, Length}                 
+        end, 
+        PosList).
+
 %%--------------------------------------------------------------------
 is_apostrophe({RhPos, _}, {LhPos, _}, []) ->   
     if
@@ -153,6 +162,7 @@ is_apostrophe({RhPos, _}, {LhPos, _}, []) ->
             quotes
     end;
 
+%%--------------------------------------------------------------------
 is_apostrophe({RhPos, _}, {LhPos, _}, [{Lh2Pos, _} | _]) ->   
     if
         RhPos < LhPos -> 
