@@ -4,17 +4,23 @@
 -module(webgnosus_text).
 
 %% API
--compile(export_all).
-
 -export([
-          prepare/1
+          prepare/1,
+          tokenize/1
         ]).
 
 %%====================================================================
 %% API
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: split/1
+%% Func: prepare/1
+%% Description: prepare text for processing.
+%%--------------------------------------------------------------------
+tokenize(Doc) ->
+    tokens(prepare(Doc)).
+
+%%--------------------------------------------------------------------
+%% Func: prepare/1
 %% Description: prepare text for processing.
 %%--------------------------------------------------------------------
 prepare(Doc) ->
@@ -193,7 +199,7 @@ remove_new_lines(Doc) ->
 %% Description: return list of document words and puctuation.
 %%--------------------------------------------------------------------
 tokens(Doc) ->
-    case regexp:split(Doc, "\s+") of
+    case regexp:split(string:strip(Doc), "\s+") of
         {ok, NewDoc} ->
             NewDoc;
         X -> 
