@@ -4,12 +4,12 @@
   ]
 }.
 
-{webgnosus_punctuation, ".",     "\\.\\s+",      punctuation}.
-{webgnosus_punctuation, ".",     "\\.$",         punctuation}.
+{webgnosus_punctuation, ".",     "\\.+\\s+",     punctuation}.
+{webgnosus_punctuation, ".",     "\\.+$",        punctuation}.
+{webgnosus_punctuation, ".",     "\\.\\.+",      punctuation}.
 {webgnosus_punctuation, "?",     "\\?+",         punctuation}.
 {webgnosus_punctuation, "!",     "\\!+",         punctuation}.
 {webgnosus_punctuation, ",",     "\\,\\s+",      punctuation}.
-{webgnosus_punctuation, "...",   "\\.\\.+",      punctuation}.
 {webgnosus_punctuation, ":",     ":\\s+",        punctuation}.
 {webgnosus_punctuation, ";",     ";\\s+",        punctuation}.
 {webgnosus_punctuation, ")",     "\\)+",         punctuation}.
@@ -33,6 +33,7 @@
 {webgnosus_punctuation, ":(",    ":\\(",         smiley}.
 {webgnosus_punctuation, ":-(",   ":-\\(",        smiley}.
 {webgnosus_punctuation, ";*(",   ";\\*\\(",      smiley}.
+{webgnosus_punctuation, ";->",    ";*-+>",       smiley}.
 
 
 

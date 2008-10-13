@@ -18,7 +18,10 @@
 %% Description: prepare text for processing.
 %%--------------------------------------------------------------------
 prepare(Doc) ->
-    remove_new_lines(pad_punctuation(Doc)).
+    pad_punctuation(
+        pad_single_quotes(
+            remove_new_lines(
+                remove_smiley(Doc)))).
 
 %%====================================================================
 %%% Internal functions
@@ -66,8 +69,8 @@ remove_smiley(Doc) ->
 %% Func: remove_smiley/2
 %% Description: remove smileys from document
 %%--------------------------------------------------------------------
-remove_smiley(Smiley, Doc) ->    
-    case regexp:gsub(Doc, Smiley, "") of
+remove_smiley(S, Doc) ->    
+    case regexp:gsub(Doc, webgnosus_punctuation_model:regexp(S), "") of
         {ok, NewDoc, _} ->
             NewDoc;
         _ -> 
