@@ -12,6 +12,11 @@
           delete/1,
           find/1,
           count/0,
+          word_count/1,
+          word/1,
+          word_frequency/1,
+          document_count/1,
+          document_frequency/1,
           key/1
        ]).
 
@@ -78,6 +83,24 @@ find(all) ->
 %%--------------------------------------------------------------------
 count() ->    
     webgnosus_dbi:count(webgnosus_words).
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% attributes
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+word(#webgnosus_words{word = Attr}) ->    
+    Attr.
+
+word_count(#webgnosus_words{word_count = Attr}) ->    
+    Attr.
+
+word_frequency(#webgnosus_words{word_frequency = Attr}) ->    
+    Attr.
+
+document_count(#webgnosus_words{document_count = Attr}) ->    
+    Attr.
+
+document_frequency(#webgnosus_words{document_frequency = Attr}) ->    
+    Attr.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
