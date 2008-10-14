@@ -199,7 +199,7 @@ remove_new_lines(Doc) ->
 %% Description: return list of document words and puctuation.
 %%--------------------------------------------------------------------
 tokens(Doc) ->
-    case regexp:split(string:strip(Doc), "\s+") of
+    case regexp:split(string:to_lower(string:strip(Doc)), "\s+") of
         {ok, NewDoc} ->
             NewDoc;
         X -> 
