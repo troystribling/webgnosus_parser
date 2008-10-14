@@ -6,6 +6,7 @@
 %% API
 -export([
           get_url/1,
+          get_redirect_url/1,
           parse_xml/1
         ]).
 
@@ -19,15 +20,30 @@
 get_url(Url) ->
     HttpDoc = http:request(get, {Url, headers()}, [], []),
     case HttpDoc of
-        {ok, {{_,200,_}, _Headers, Body}} -> Body;
-        _ -> {error}
+        {ok, {{_,200,_}, _Headers, Body}} -> 
+            Body;
+        _ -> 
+            {error}
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: get_redirect_url/1
+%% Description: return redirect URL.
+%%--------------------------------------------------------------------
+get_redirect_url(Url) ->
+    HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}], []),
+    case HttpDoc of
+        {ok, {{_,301,_}, Headers, _}} -> 
+            get_location_from_headers(Headers);
+        _ -> 
+            {error}
     end.
 
 %%--------------------------------------------------------------------
 %% Func: headers/0
 %% Description: build request headers.
 %%--------------------------------------------------------------------
-headers() -> [{"User-Agent", "Webgnos.us/0.0"}].
+headers() -> [{"User-Agent", "web.gnos.us/0.0"}].
 
 %%--------------------------------------------------------------------
 %% Func: parse_xml/1
@@ -46,3 +62,14 @@ parse_xml(Document) ->
 %%====================================================================
 %%% Internal functions
 %%====================================================================
+%%--------------------------------------------------------------------
+%% Func: get_location_from_headers/1
+%% Description: get location from 301 header.
+%%--------------------------------------------------------------------
+get_location_from_headers(Headers) ->
+    case lists:keysearch("location", 1, Headers) of
+        {value, {"location", Location}} ->
+            Location;
+        _ ->
+            error
+    end.
