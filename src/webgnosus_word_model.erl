@@ -34,7 +34,7 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(webgnosus_words, [{attributes, record_info(fields, webgnosus_words)}, {disc_only_copies, [node()]}]).
+    webgnosus_dbi:create_table(webgnosus_words, [{attributes, record_info(fields, webgnosus_words)}, {disc_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
@@ -59,6 +59,10 @@ clear_table() ->
 %%--------------------------------------------------------------------
 write(R) when is_record(R, webgnosus_words) ->
     webgnosus_dbi:write_row(R);
+
+%write(R) is_list(R) ->
+%    webgnosus_dbi:write_row({webgnosus_words, lists:Word, WordCount, DocCount});
+
 write(_) ->
     {atomic, error}.
 

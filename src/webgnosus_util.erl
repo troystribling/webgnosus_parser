@@ -1,27 +1,24 @@
 %%%-------------------------------------------------------------------
-%%% webgnosus text processing utilities
+%%% laconica utilities
 %%%-------------------------------------------------------------------
--module(webgnosus_word_analysis).
+-module(webgnosus_util).
 
 %% API
 -export([
-          frequency/1,
-          frequency/2
+          get_attribute/2
         ]).
 
 %%====================================================================
 %% API
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: frequency/1
-%% Description: compute word frequencies
+%% Func: get_location_from_headers/1
+%% Description: get location from 301 header.
 %%--------------------------------------------------------------------
-frequency(Doc) ->
-    frequency(Doc, gb_trees:empty()).
-
-frequency(Doc, Words) ->
-    none.
-
-%%====================================================================
-%%% Internal functions
-%%====================================================================
+get_attribute(Key, R) ->
+    case lists:keysearch(Key, 1, R) of
+        {value, {Key, Location}} ->
+            Location;
+        _ ->
+            error
+    end.
