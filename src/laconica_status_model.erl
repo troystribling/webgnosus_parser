@@ -17,6 +17,8 @@
           oldest/1,
           latest/0,
           latest/1,
+          get_tags/1,
+          get_urls/1,
           key/1
        ]).
 
@@ -146,6 +148,20 @@ oldest({site, Site}) ->
         {}, 
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
+%%--------------------------------------------------------------------
+%% Func: get_tags/1
+%% Description: return all tags in status
+%%--------------------------------------------------------------------
+get_tags(#laconica_statuses{text = S}) ->
+    webgnosus_util:get_matches(S, "\\s#[0-9a-zA-Z]+\s|\\s#[0-9a-zA-Z]+$").
+    
+%%--------------------------------------------------------------------
+%% Func: get_tags/1
+%% Description: return all urls in status
+%%--------------------------------------------------------------------
+get_urls(#laconica_statuses{text = S}) ->
+    webgnosus_util:get_matches(S, "^http:.*\\s|\\shttp:.*\\s|\\shttp:.*$").
+    
 %%--------------------------------------------------------------------
 %% Func: latest/1
 %% Description: return latest

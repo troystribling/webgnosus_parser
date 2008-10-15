@@ -5,7 +5,8 @@
 
 %% API
 -export([
-          get_attribute/2
+          get_attribute/2,
+          get_matches/2
         ]).
 
 %%====================================================================
@@ -17,8 +18,24 @@
 %%--------------------------------------------------------------------
 get_attribute(Key, R) ->
     case lists:keysearch(Key, 1, R) of
-        {value, {Key, Location}} ->
-            Location;
+        {value, {Key, Value}} ->
+            Value;
         _ ->
-            error
+            undefined
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: get_matches/1
+%% Description: return all tags in status
+%%--------------------------------------------------------------------
+get_matches(S, R) ->
+    case regexp:matches(S, R) of
+        {match, Matches} ->
+            lists:map(
+                fun({Pos, Length}) ->
+                    lists:sublist(S, Pos, Length)
+                end,
+                Matches);
+        {error, _} ->
+            []
     end.

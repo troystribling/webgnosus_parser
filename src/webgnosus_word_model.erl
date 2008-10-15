@@ -60,8 +60,14 @@ clear_table() ->
 write(R) when is_record(R, webgnosus_words) ->
     webgnosus_dbi:write_row(R);
 
-%write(R) is_list(R) ->
-%    webgnosus_dbi:write_row({webgnosus_words, lists:Word, WordCount, DocCount});
+write(R) when is_list(R) ->
+    webgnosus_dbi:write_row({webgnosus_words, 
+        webgnosus_util:get_attribute(word, R),
+        webgnosus_util:get_attribute(word_count, R),
+        webgnosus_util:get_attribute(document_count, R),
+        webgnosus_util:get_attribute(word_frequency, R),
+        webgnosus_util:get_attribute(document_frequency, R)
+    });
 
 write(_) ->
     {atomic, error}.
