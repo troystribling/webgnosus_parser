@@ -49,9 +49,9 @@ get_redirect_url(Url) ->
     HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}], []),
     case HttpDoc of
         {ok, {{_,301,_}, Headers, _}} -> 
-            get_location_from_headers(Headers);
+            webgnosus_util:get_attribute("location", Headers);
         _ -> 
-            {error}
+            Url
     end.
 
 %%--------------------------------------------------------------------

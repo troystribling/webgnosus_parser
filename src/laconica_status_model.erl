@@ -149,9 +149,19 @@ oldest({site, Site}) ->
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%--------------------------------------------------------------------
+%% Func: tokenize/1
+%% Description: tokenize status text
+%%--------------------------------------------------------------------
+tokenize(#laconica_statuses{text = S}) ->
+    webgnosus_text:tokenize(S).
+    
+%%--------------------------------------------------------------------
 %% Func: get_tags/1
 %% Description: return all tags in status
 %%--------------------------------------------------------------------
+get_tags(Tokens)  when is_list(Tokens) ->
+    webgnosus_util:get_matches(S, "\\s#[0-9a-zA-Z]+\s|\\s#[0-9a-zA-Z]+$").
+
 get_tags(#laconica_statuses{text = S}) ->
     webgnosus_util:get_matches(S, "\\s#[0-9a-zA-Z]+\s|\\s#[0-9a-zA-Z]+$").
     
