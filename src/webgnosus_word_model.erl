@@ -15,9 +15,8 @@
           word_count/1,
           word/1,
           word_frequency/1,
-          document_count/1,
-          document_frequency/1,
-          key/1
+          key/1,
+          count_words/2
        ]).
 
 %% include
@@ -64,9 +63,7 @@ write(R) when is_list(R) ->
     webgnosus_dbi:write_row({webgnosus_words, 
         webgnosus_util:get_attribute(word, R),
         webgnosus_util:get_attribute(word_count, R),
-        webgnosus_util:get_attribute(document_count, R),
-        webgnosus_util:get_attribute(word_frequency, R),
-        webgnosus_util:get_attribute(document_frequency, R)
+        webgnosus_util:get_attribute(word_frequency, R)
     });
 
 write(_) ->
@@ -106,12 +103,6 @@ word_count(#webgnosus_words{word_count = Attr}) ->
 word_frequency(#webgnosus_words{word_frequency = Attr}) ->    
     Attr.
 
-document_count(#webgnosus_words{document_count = Attr}) ->    
-    Attr.
-
-document_frequency(#webgnosus_words{document_frequency = Attr}) ->    
-    Attr.
-
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -123,6 +114,23 @@ document_frequency(#webgnosus_words{document_frequency = Attr}) ->
 key(Word) ->
     Word.
 
+%%--------------------------------------------------------------------
+%% Func: frequency/2
+%% Description: counts words in tokenized document
+%%--------------------------------------------------------------------
+count_words(Tokens, Words) ->
+    lists:foldl(        
+        fun(T, W) ->
+            case gb_trees:is_defined(T, W) of
+                true ->
+                    gb_trees:update(T, gb_trees:get(T, W) + 1, W);
+                false ->
+                    gb_trees:insert(T, 1, W)
+            end
+        end,
+        Words,
+        Tokens).
+    
 %%====================================================================
 %%% Internal functions
 %%====================================================================

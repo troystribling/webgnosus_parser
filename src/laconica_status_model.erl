@@ -13,12 +13,14 @@
           find/1,
           count/0,
           count/1,
+          get_tags/1,
+          get_urls/1,
+          tokenize/1,
+          count_words/2,
           oldest/0,
           oldest/1,
           latest/0,
           latest/1,
-          get_tags/1,
-          get_urls/1,
           key/1
        ]).
 
@@ -73,6 +75,9 @@ write(_) ->
 delete({StatusId, UserId, Site}) ->
     webgnosus_dbi:delete_row({laconica_statuses, {StatusId, UserId, Site}}).
 
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% queries
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
 %% Func: find/1
 %% Description: find models
@@ -92,86 +97,8 @@ find({{site, Site}, {text, R}}) ->
 %% find specified record to database
 find({StatusId, UserId, Site}) ->
     {atomic, Result} = webgnosus_dbi:read_row({laconica_statuses, {StatusId, UserId, Site}}),
-    Result.
+    hd(Result).
 
-%%--------------------------------------------------------------------
-%% Func: count/0
-%% Description: return row count
-%%--------------------------------------------------------------------
-%% return row count
-count() ->    
-    webgnosus_dbi:count(laconica_statuses).
-
-%%--------------------------------------------------------------------
-%% Func: count/1
-%% Description: return row count for specified site
-%%--------------------------------------------------------------------
-%% return row count for specified site
-count({site, Site}) ->
-    webgnosus_dbi:map(
-        fun(_S, Sum) -> 
-            Sum + 1
-        end, 
-        0, 
-        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
-
-%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%% model row methods
-%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%%--------------------------------------------------------------------
-%% Func: key/1
-%% Description: define model key
-%%--------------------------------------------------------------------
-%% find all models
-key({StatusId, UserId, SiteUrl}) ->
-    {StatusId, UserId, SiteUrl}.
-
-%%--------------------------------------------------------------------
-%% Func: oldest/1
-%% Description: return the oldest status.
-%%--------------------------------------------------------------------
-%% return oldest status
-oldest() ->      
-    webgnosus_dbi:map(
-        fun(S, Old) ->  
-            older(S, Old)
-        end, 
-        {}, 
-        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
-
-%% return oldest status for specified site
-oldest({site, Site}) ->      
-    webgnosus_dbi:map(
-        fun(S, Old) ->  
-            older(S, Old)
-        end, 
-        {}, 
-        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
-
-%%--------------------------------------------------------------------
-%% Func: tokenize/1
-%% Description: tokenize status text
-%%--------------------------------------------------------------------
-tokenize(#laconica_statuses{text = S}) ->
-    webgnosus_text:tokenize(S).
-    
-%%--------------------------------------------------------------------
-%% Func: get_tags/1
-%% Description: return all tags in status
-%%--------------------------------------------------------------------
-get_tags(Tokens)  when is_list(Tokens) ->
-    webgnosus_util:get_matches(S, "\\s#[0-9a-zA-Z]+\s|\\s#[0-9a-zA-Z]+$").
-
-get_tags(#laconica_statuses{text = S}) ->
-    webgnosus_util:get_matches(S, "\\s#[0-9a-zA-Z]+\s|\\s#[0-9a-zA-Z]+$").
-    
-%%--------------------------------------------------------------------
-%% Func: get_tags/1
-%% Description: return all urls in status
-%%--------------------------------------------------------------------
-get_urls(#laconica_statuses{text = S}) ->
-    webgnosus_util:get_matches(S, "^http:.*\\s|\\shttp:.*\\s|\\shttp:.*$").
-    
 %%--------------------------------------------------------------------
 %% Func: latest/1
 %% Description: return latest
@@ -224,6 +151,91 @@ latest({{site, Site}, {count, Count}}) ->
          end,
          Result).
     
+%%--------------------------------------------------------------------
+%% Func: count/0
+%% Description: return row count
+%%--------------------------------------------------------------------
+%% return row count
+count() ->    
+    webgnosus_dbi:count(laconica_statuses).
+
+%%--------------------------------------------------------------------
+%% Func: count/1
+%% Description: return row count for specified site
+%%--------------------------------------------------------------------
+%% return row count for specified site
+count({site, Site}) ->
+    webgnosus_dbi:map(
+        fun(_S, Sum) -> 
+            Sum + 1
+        end, 
+        0, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% model row methods
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%%--------------------------------------------------------------------
+%% Func: key/1
+%% Description: define model key
+%%--------------------------------------------------------------------
+%% model key
+key({StatusId, UserId, SiteUrl}) ->
+    {StatusId, UserId, SiteUrl}.
+
+%%--------------------------------------------------------------------
+%% Func: oldest/1
+%% Description: return the oldest status.
+%%--------------------------------------------------------------------
+%% return oldest status
+oldest() ->      
+    webgnosus_dbi:map(
+        fun(S, Old) ->  
+            older(S, Old)
+        end, 
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+
+%% return oldest status for specified site
+oldest({site, Site}) ->      
+    webgnosus_dbi:map(
+        fun(S, Old) ->  
+            older(S, Old)
+        end, 
+        {}, 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% document analysis
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%%--------------------------------------------------------------------
+%% Func: tokenize/1
+%% Description: tokenize status text
+%%--------------------------------------------------------------------
+tokenize(#laconica_statuses{text = S}) ->
+    webgnosus_text:tokenize(S).
+    
+%%--------------------------------------------------------------------
+%% Func: get_tags/1
+%% Description: return all tags in status
+%%--------------------------------------------------------------------
+get_tags(Tokens) when is_list(Tokens) ->
+    webgnosus_util:filter(Tokens, "^#").
+
+%%--------------------------------------------------------------------
+%% Func: get_urls/1
+%% Description: return all urls in status
+%%--------------------------------------------------------------------
+get_urls(Tokens) when is_list(Tokens) ->
+    webgnosus_util:filter(Tokens, "^http:").
+
+%%--------------------------------------------------------------------
+%% Func: count_words/1
+%% Description: determine word counts for status text
+%%--------------------------------------------------------------------
+count_words(Status, Words) ->
+    webgnosus_word_model:count_words(tokenize(Status), Words).
+
 %%====================================================================
 %% Internal functions
 %%====================================================================        

@@ -5,9 +5,7 @@
     {
         word,
         word_count,
-        document_count,
-        word_frequency,
-        document_frequency
+        word_frequency
     }
 ).
 
