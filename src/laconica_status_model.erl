@@ -17,6 +17,7 @@
           get_urls/1,
           tokenize/1,
           count_words/2,
+          count_words/0,
           oldest/0,
           oldest/1,
           latest/0,
@@ -105,7 +106,7 @@ find({StatusId, UserId, Site}) ->
 %%--------------------------------------------------------------------
 %% return latest status
 latest() ->  
-    webgnosus_dbi:map(
+    webgnosus_dbi:fold(
         fun(S, Late) ->  
             later(S, Late)
         end,
@@ -114,7 +115,7 @@ latest() ->
 
 %% return latest status for specified site
 latest({site, Site}) ->      
-    webgnosus_dbi:map(
+    webgnosus_dbi:fold(
         fun(S, Late) ->  
             later(S, Late)
         end, 
@@ -123,7 +124,7 @@ latest({site, Site}) ->
 
 %% return latest count of statuses
 latest({count, Count}) ->      
-    Result = webgnosus_dbi:map(
+    Result = webgnosus_dbi:fold(
         fun(S, Late) ->  
             later(S, Late, Count)
         end, 
@@ -138,7 +139,7 @@ latest({count, Count}) ->
 
 %% return latest count of statuses for specified site
 latest({{site, Site}, {count, Count}}) ->      
-    Result = webgnosus_dbi:map(
+    Result = webgnosus_dbi:fold(
         fun(S, Late) ->  
             later(S, Late, Count)
         end, 
@@ -165,7 +166,7 @@ count() ->
 %%--------------------------------------------------------------------
 %% return row count for specified site
 count({site, Site}) ->
-    webgnosus_dbi:map(
+    webgnosus_dbi:fold(
         fun(_S, Sum) -> 
             Sum + 1
         end, 
@@ -189,7 +190,7 @@ key({StatusId, UserId, SiteUrl}) ->
 %%--------------------------------------------------------------------
 %% return oldest status
 oldest() ->      
-    webgnosus_dbi:map(
+    webgnosus_dbi:fold(
         fun(S, Old) ->  
             older(S, Old)
         end, 
@@ -198,7 +199,7 @@ oldest() ->
 
 %% return oldest status for specified site
 oldest({site, Site}) ->      
-    webgnosus_dbi:map(
+    webgnosus_dbi:fold(
         fun(S, Old) ->  
             older(S, Old)
         end, 
@@ -206,14 +207,25 @@ oldest({site, Site}) ->
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%% document analysis
+%% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
 %% Func: tokenize/1
 %% Description: tokenize status text
 %%--------------------------------------------------------------------
 tokenize(#laconica_statuses{text = S}) ->
-    webgnosus_text:tokenize(S).
+   Toks =  webgnosus_text:tokenize(S),
+   Urls = get_urls(Toks),
+   MapUrls = lists:map(
+        fun(U) ->  
+            webgnosus_http:get_redirect_url(U)
+        end, 
+        Urls),
+    lists:append(
+        lists:subtract(Toks, Urls),
+        MapUrls
+    ).
+   
     
 %%--------------------------------------------------------------------
 %% Func: get_tags/1
@@ -230,9 +242,17 @@ get_urls(Tokens) when is_list(Tokens) ->
     webgnosus_util:filter(Tokens, "^http:").
 
 %%--------------------------------------------------------------------
-%% Func: count_words/1
+%% Func: count_words
 %% Description: determine word counts for status text
 %%--------------------------------------------------------------------
+count_words() ->
+    webgnosus_dbi:fold(
+        fun(S, Words) ->  
+            count_words(S, Words)
+        end, 
+        gb_trees:empty(), 
+        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+
 count_words(Status, Words) ->
     webgnosus_word_model:count_words(tokenize(Status), Words).
 

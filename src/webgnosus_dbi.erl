@@ -13,7 +13,7 @@
           read_row/1,
           q/1,
           limit/2,
-          map/3,
+          fold/3,
           count/1
        ]).
 
@@ -112,7 +112,7 @@ limit(Q, C) ->
 %% Func: map/3
 %% Description: apply function to query
 %%--------------------------------------------------------------------
-map(F, I, Q) ->
+fold(F, I, Q) ->
     {atomic, Val} = mnesia:transaction(
         fun() ->
            qlc:fold(F, I, Q)
@@ -125,7 +125,7 @@ map(F, I, Q) ->
 %%--------------------------------------------------------------------
 %% return row count
 count(Table) ->    
-     webgnosus_dbi:map(
+     webgnosus_dbi:fold(
          fun(_S, Sum) -> 
              Sum + 1 
          end, 

@@ -15,6 +15,7 @@
           word_count/1,
           word/1,
           word_frequency/1,
+          write_words/1,
           key/1,
           count_words/2
        ]).
@@ -104,18 +105,10 @@ word_frequency(#webgnosus_words{word_frequency = Attr}) ->
     Attr.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-%% model row methods
+%% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
-%% Func: key/1
-%% Description: define model key
-%%--------------------------------------------------------------------
-%% find all models
-key(Word) ->
-    Word.
-
-%%--------------------------------------------------------------------
-%% Func: frequency/2
+%% Func: count_words/2
 %% Description: counts words in tokenized document
 %%--------------------------------------------------------------------
 count_words(Tokens, Words) ->
@@ -131,6 +124,30 @@ count_words(Tokens, Words) ->
         Words,
         Tokens).
     
+%%--------------------------------------------------------------------
+%% Func: write_words/1
+%% Description: counts words in tokenized document
+%%--------------------------------------------------------------------
+write_words(Words) ->
+    clear_table(),
+    Total = lists:sum(gb_trees:values(Words)),
+    lists:foreach(        
+        fun({W, C}) ->
+            write([{word, W}, {word_count, C}, {word_frequency, C/Total}])
+        end,
+        gb_trees:to_list(Words)).
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% model row methods
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%%--------------------------------------------------------------------
+%% Func: key/1
+%% Description: define model key
+%%--------------------------------------------------------------------
+%% find all models
+key(Word) ->
+    Word.
+
 %%====================================================================
 %%% Internal functions
 %%====================================================================
