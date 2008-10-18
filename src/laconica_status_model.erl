@@ -18,6 +18,7 @@
           tokenize_and_resolve_urls/1,
           tokenize/1,
           count_words/2,
+          count_words/1,
           count_words/0,
           oldest/0,
           oldest/1,
@@ -245,14 +246,21 @@ get_urls(Tokens) when is_list(Tokens) ->
 %% Func: count_words
 %% Description: determine word counts for status text
 %%--------------------------------------------------------------------
+% count words for all status messages and save
 count_words() ->
+    webgnosus_word_model:write_words(
+        count_words(qlc:q([S || S <- mnesia:table(laconica_statuses)]))).
+
+% count words for specified list of status messages
+count_words(StatusList) when is_list(StatusList)->
     webgnosus_dbi:fold(
         fun(S, Words) ->  
             count_words(S, Words)
         end, 
         gb_trees:empty(), 
-        qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+        StatusList).
 
+% count words for specified status message
 count_words(Status, Words) ->
     webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status), Words).
 
@@ -311,16 +319,14 @@ later(S, Late, Count) ->
 %% Func: date_to_gregorian_seconds/1
 %% Description: convert laconica date format gregorian seconds.
 %%--------------------------------------------------------------------
-date_to_gregorian_seconds(S) ->
-    #laconica_statuses{created_at = SD} = S,
+date_to_gregorian_seconds(#laconica_statuses{created_at = SD}) ->
     laconica_util:date_to_gregorian_seconds(SD).
 
 %%--------------------------------------------------------------------
 %% Func: tesxt_contains/2
 %% Description: true if specified rexp matches status text.
 %%--------------------------------------------------------------------
-text_contains(S, R) ->
-    #laconica_statuses{text = T} = S,
+text_contains(#laconica_statuses{text = T}, R) ->
     case regexp:first_match(T, R) of
         {match, _, _} ->
             true;
@@ -332,11 +338,10 @@ text_contains(S, R) ->
 %% Func: update_late_list/3
 %% Description: if status is later add to list.
 %%--------------------------------------------------------------------
-update_later_list(SSecs, S, Late) ->
-    {OldestSecs, _} = hd(Late),
+update_later_list(StatusSecs, Status, [{LeastLate, _} | _] = Late) ->
     if
-        SSecs > OldestSecs ->
-            [_ | NewLate] = lists:keysort(1, [{SSecs, S} | Late]),
+        StatusSecs > LeastLate ->
+            [_ | NewLate] = lists:keysort(1, [{StatusSecs, Status} | Late]),
             NewLate;
         true ->
             Late

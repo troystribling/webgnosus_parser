@@ -12,6 +12,7 @@
           delete/1,
           find/1,
           count/0,
+          total_word_count/0,
           word_count/1,
           word/1,
           word_frequency/1,
@@ -100,12 +101,25 @@ find(all) ->
 %% return sorted list of most frequent words
 most_frequent({count, Count}) ->      
     Result = webgnosus_dbi:fold(
-        fun(S, Late) ->  
-            larger(S, Late, Count)
+        fun(W, Words) ->  
+            larger_count(W, Words, Count)
         end, 
         [], 
         qlc:q([W || W <- mnesia:table(webgnosus_words)])),
     webgnosus_util:values(Result).
+
+%%--------------------------------------------------------------------
+%% Func: total_word_count/0
+%% Description: find models
+%%--------------------------------------------------------------------
+%% return sorted list of most frequent words
+total_word_count() ->      
+    webgnosus_dbi:fold(
+        fun(#webgnosus_words{word_count = WordCount}, Count) ->  
+            Count + WordCount
+        end, 
+        0, 
+        qlc:q([W || W <- mnesia:table(webgnosus_words)])).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
@@ -168,14 +182,25 @@ key(Word) ->
 %%====================================================================
 %%--------------------------------------------------------------------
 %% Func: later/3
-%% Description: add status to late list if later than any in list
+%% Description: build list of words with largest count
 %%--------------------------------------------------------------------
-larger({_, WordCount, _}, Large, Count) ->
-    true.
-%    LargeSize = length(Large),
-%    if
-%        LargeSize < Count ->
-%            lists:keysort(1, [{WordCount, W} | Large]);
-%        true ->
-%            update_later_list(SSecs, S, Large)
-%    end.
+larger_count(#webgnosus_words{word_count = WordCount} = Word, Large, Count) ->
+    if
+        length(Large) < Count ->
+            lists:keysort(1, [{WordCount, Word} | Large]);
+        true ->
+            update_larger_count_list(WordCount, Word, Large)
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: update_late_list/3
+%% Description: if status is later add to list.
+%%--------------------------------------------------------------------
+update_larger_count_list(WordCount, Word, [{LeastLargeCount, _} | _] = Large) ->
+    if
+        WordCount > LeastLargeCount ->
+            [_ | NewLarge] = lists:keysort(1, [{WordCount, Word} | Large]),
+            NewLarge;
+        true ->
+            Large
+    end.
