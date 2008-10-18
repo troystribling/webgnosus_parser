@@ -20,6 +20,7 @@
           key/1,
           most_frequent/1,
           dump/1,
+          sort/1,
           count_words/2
        ]).
 
@@ -96,6 +97,17 @@ find(all) ->
     webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(webgnosus_words)])).
 
 %%--------------------------------------------------------------------
+%% Func: sort/1
+%% Description: counts words in tokenized document
+%%--------------------------------------------------------------------
+sort(Words) when is_list(Words) ->
+    lists:sort(        
+        fun(#webgnosus_words{word_count = WordCountA}, #webgnosus_words{word_count = WordCountB}) ->
+            WordCountA > WordCountB
+        end,
+        Words).
+
+%%--------------------------------------------------------------------
 %% Func: most_frequent/1
 %% Description: find models
 %%--------------------------------------------------------------------
@@ -133,7 +145,7 @@ dump(File) ->
                 fun(W) ->
                     io:format(Fh, "~p.~n", [W])
                 end,
-                sort_by_count(find(all))),
+                sort(find(all))),
             file:close(Fh);
         Error ->
             Error
@@ -222,16 +234,5 @@ update_larger_count_list(WordCount, Word, [{LeastLargeCount, _} | _] = Large) ->
         true ->
             Large
     end.
-
-%%--------------------------------------------------------------------
-%% Func: sort_by_count/1
-%% Description: counts words in tokenized document
-%%--------------------------------------------------------------------
-sort_by_count(Words) when is_list(Words) ->
-    lists:sort(        
-        fun(#webgnosus_words{word_count = WordCountA}, #webgnosus_words{word_count = WordCountB}) ->
-            WordCountA > WordCountB
-        end,
-        Words).
 
 
