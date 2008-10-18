@@ -15,6 +15,7 @@
           count/1,
           get_tags/1,
           get_urls/1,
+          tokenize_and_resolve_urls/1,
           tokenize/1,
           count_words/2,
           count_words/0,
@@ -97,8 +98,12 @@ find({{site, Site}, {text, R}}) ->
 
 %% find specified record to database
 find({StatusId, UserId, Site}) ->
-    {atomic, Result} = webgnosus_dbi:read_row({laconica_statuses, {StatusId, UserId, Site}}),
-    hd(Result).
+    case webgnosus_dbi:read_row({laconica_statuses, {StatusId, UserId, Site}}) of
+        {atomic, []} ->
+            error;
+        {atomic, Result} ->
+            hd(Result)
+     end.
 
 %%--------------------------------------------------------------------
 %% Func: latest/1
@@ -131,8 +136,7 @@ latest({count, Count}) ->
         [], 
         qlc:q([S || S <- mnesia:table(laconica_statuses)])),
     lists:map(
-        fun(R) ->
-            {_, Status} = R,
+        fun({_, Status}) ->
             Status
          end,
          Result);
@@ -146,8 +150,7 @@ latest({{site, Site}, {count, Count}}) ->
         [], 
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])),
     lists:map(
-        fun(R) ->
-            {_, Status} = R,
+        fun({_, Status}) ->
             Status
          end,
          Result).
@@ -156,7 +159,6 @@ latest({{site, Site}, {count, Count}}) ->
 %% Func: count/0
 %% Description: return row count
 %%--------------------------------------------------------------------
-%% return row count
 count() ->    
     webgnosus_dbi:count(laconica_statuses).
 
@@ -210,10 +212,10 @@ oldest({site, Site}) ->
 %% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
-%% Func: tokenize/1
-%% Description: tokenize status text
+%% Func: tokenize_and_resolve_urls/1
+%% Description: tokenize status text and resolve redirected URLs
 %%--------------------------------------------------------------------
-tokenize(#laconica_statuses{text = S}) ->
+tokenize_and_resolve_urls(#laconica_statuses{text = S}) ->
    Toks =  webgnosus_text:tokenize(S),
    Urls = get_urls(Toks),
    MapUrls = lists:map(
@@ -226,6 +228,12 @@ tokenize(#laconica_statuses{text = S}) ->
         MapUrls
     ).
    
+%%--------------------------------------------------------------------
+%% Func: tokenize_amd_resolve_urls/1
+%% Description: tokenize status text and resolve redirected URLs
+%%--------------------------------------------------------------------
+tokenize(#laconica_statuses{text = S}) ->
+   webgnosus_text:tokenize(S).
     
 %%--------------------------------------------------------------------
 %% Func: get_tags/1
@@ -254,7 +262,7 @@ count_words() ->
         qlc:q([S || S <- mnesia:table(laconica_statuses)])).
 
 count_words(Status, Words) ->
-    webgnosus_word_model:count_words(tokenize(Status), Words).
+    webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status), Words).
 
 %%====================================================================
 %% Internal functions

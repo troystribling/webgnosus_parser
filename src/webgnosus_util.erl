@@ -7,6 +7,7 @@
 -export([
           get_attribute/2,
           get_matches/2,
+          replace_at_position/3,
           filter/2
         ]).
 
@@ -56,3 +57,14 @@ filter(List, R) ->
             end
          end,
          List).
+
+%%--------------------------------------------------------------------
+%% Func: replace_at_position/3
+%% Description:replace string at postion.
+%%--------------------------------------------------------------------
+replace_at_position({Pos, Length}, Rep, Doc) ->    
+    {Head, Tail} = lists:split(Pos - 1, Doc),
+    NewTail = lists:sublist(Tail, Length + 1, length(Tail) - Length),
+    lists:concat([Head, Rep, NewTail]).
+
+

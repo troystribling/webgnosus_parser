@@ -17,6 +17,7 @@
           word_frequency/1,
           write_words/1,
           key/1,
+          most_frequent/1,
           count_words/2
        ]).
 
@@ -70,6 +71,10 @@ write(R) when is_list(R) ->
 write(_) ->
     {atomic, error}.
 
+%% return row count
+count() ->    
+    webgnosus_dbi:count(laconica_statuses).
+
 %%--------------------------------------------------------------------
 %% Func: delete/1
 %% Description: delete specified record to database
@@ -77,6 +82,9 @@ write(_) ->
 delete(Word) ->
     webgnosus_dbi:delete_row({webgnosus_words, Word}).
 
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% queries
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
 %% Func: find/1
 %% Description: find models
@@ -86,11 +94,22 @@ find(all) ->
     webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(webgnosus_words)])).
 
 %%--------------------------------------------------------------------
-%% Func: count/0
-%% Description: return row count
+%% Func: most_frequent/1
+%% Description: find models
 %%--------------------------------------------------------------------
-count() ->    
-    webgnosus_dbi:count(webgnosus_words).
+%% return sorted list of most frequent words
+most_frequent({count, Count}) ->      
+    Result = webgnosus_dbi:fold(
+        fun(S, Late) ->  
+            larger(S, Late, Count)
+        end, 
+        [], 
+        qlc:q([W || W <- mnesia:table(webgnosus_words)])),
+    lists:map(
+        fun({_, Word}) ->
+            Word
+         end,
+         Result).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
@@ -151,3 +170,16 @@ key(Word) ->
 %%====================================================================
 %%% Internal functions
 %%====================================================================
+%%--------------------------------------------------------------------
+%% Func: later/3
+%% Description: add status to late list if later than any in list
+%%--------------------------------------------------------------------
+larger({_, WordCount, _}, Large, Count) ->
+    true.
+%    LargeSize = length(Large),
+%    if
+%        LargeSize < Count ->
+%            lists:keysort(1, [{WordCount, W} | Large]);
+%        true ->
+%            update_later_list(SSecs, S, Large)
+%    end.

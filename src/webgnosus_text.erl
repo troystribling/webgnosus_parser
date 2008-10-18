@@ -9,6 +9,8 @@
           tokenize/1
         ]).
 
+-compile(export_all).
+
 %%====================================================================
 %% API
 %%====================================================================
@@ -25,13 +27,42 @@ tokenize(Doc) ->
 %%--------------------------------------------------------------------
 prepare(Doc) ->
     pad_punctuation(
-        pad_single_quotes(
-            remove_new_lines(
-                remove_smiley(Doc)))).
+        pad_internal_period(
+            pad_terminating_period(
+                pad_single_quotes(
+                    remove_new_lines(
+                        remove_smiley(Doc)))))).
 
 %%====================================================================
 %%% Internal functions
 %%====================================================================
+%%--------------------------------------------------------------------
+%% Func: pad_period/1
+%% Description: remove smileys from document
+%%--------------------------------------------------------------------
+pad_internal_period(Doc) ->    
+    case regexp:matches(Doc, "[0-9a-zA-Z]+\\.\\s") of
+        {match, Matches} ->
+            {Result, _} = lists:foldl(
+                fun({Pos, Length}, {D, C}) ->
+                    {webgnosus_util:replace_at_position({Pos + Length - 2 + C, 2}, " . ", D), C+ 1}
+                end,
+                {Doc, 0},
+                Matches),
+            Result;
+        _ -> 
+            Doc
+    end.
+
+%%--------------------------------------------------------------------
+pad_terminating_period(Doc) ->    
+    case regexp:match(Doc, "[0-9a-zA-Z]+\\.$") of
+        {match, _, _} ->
+            webgnosus_util:replace_at_position({length(Doc), 1}, " . ", Doc);
+        _ -> 
+            Doc
+    end.
+
 %%--------------------------------------------------------------------
 %% Func: pad_punctuation/1
 %% Description: place spaces before and after puctutaion for post 
@@ -59,9 +90,8 @@ pad_punctuation(P, Doc) ->
     end.
 
 %%--------------------------------------------------------------------
-%% Func: pad_punctuation/1
-%% Description: place spaces before and after puctutaion for post 
-%%              processing for all punctuation symbols.
+%% Func: remove_smiley/1
+%% Description: remove smileys.
 %%--------------------------------------------------------------------
 remove_smiley(Doc) ->    
     lists:foldl(
@@ -82,16 +112,6 @@ remove_smiley(S, Doc) ->
         _ -> 
             Doc
     end.
-
-%%--------------------------------------------------------------------
-%% Func: replace_at_position/3
-%% Description: remove smileys from document
-%%--------------------------------------------------------------------
-replace_at_position({Pos, Length}, Rep, Doc) ->    
-    {Head, Tail} = lists:split(Pos - 1, Doc),
-    NewTail = lists:sublist(Tail, Length + 1, length(Tail) - Length),
-    lists:concat([Head, Rep, NewTail]).
-
 
 %%--------------------------------------------------------------------
 %% Func: pad_single_quotes/1
@@ -138,7 +158,7 @@ pad_matched_single_quote_pairs([Rh | Rt], [Lh | Lt], Doc) ->
     find_single_quote_pairs_and_pad(
         update_right_single_quote_match_position(Rt), 
         update_left_single_quote_match_position(Lt, Rh), 
-        replace_at_position(Lh, " ' ", replace_at_position(Rh, " ' ", Doc))).
+        webgnosus_util:replace_at_position(Lh, " ' ", webgnosus_util:replace_at_position(Rh, " ' ", Doc))).
 
 %%--------------------------------------------------------------------
 update_right_single_quote_match_position(PosList) ->
