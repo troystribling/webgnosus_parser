@@ -19,6 +19,7 @@
           write_words/1,
           key/1,
           most_frequent/1,
+          dump/1,
           count_words/2
        ]).
 
@@ -121,6 +122,23 @@ total_word_count() ->
         0, 
         qlc:q([W || W <- mnesia:table(webgnosus_words)])).
 
+%%--------------------------------------------------------------------
+%% Func: dump/1
+%% Description: dump word frequencies to file after sorting
+%%--------------------------------------------------------------------
+dump(File) ->      
+    case file:open(File, write) of
+        {ok, Fh} ->
+            lists:foreach(
+                fun(W) ->
+                    io:format(Fh, "~p.~n", [W])
+                end,
+                sort_by_count(find(all))),
+            file:close(Fh);
+        Error ->
+            Error
+    end.
+
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -204,3 +222,16 @@ update_larger_count_list(WordCount, Word, [{LeastLargeCount, _} | _] = Large) ->
         true ->
             Large
     end.
+
+%%--------------------------------------------------------------------
+%% Func: sort_by_count/1
+%% Description: counts words in tokenized document
+%%--------------------------------------------------------------------
+sort_by_count(Words) when is_list(Words) ->
+    lists:sort(        
+        fun(#webgnosus_words{word_count = WordCountA}, #webgnosus_words{word_count = WordCountB}) ->
+            WordCountA > WordCountB
+        end,
+        Words).
+
+
