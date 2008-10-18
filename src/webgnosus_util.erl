@@ -8,6 +8,7 @@
           get_attribute/2,
           get_matches/2,
           replace_at_position/3,
+          values/1,
           filter/2
         ]).
 
@@ -55,6 +56,17 @@ filter(List, R) ->
                  _ ->
                     false
             end
+         end,
+         List).
+
+%%--------------------------------------------------------------------
+%% Func: values/1
+%% Description: return list of tuple values
+%%--------------------------------------------------------------------
+values(List) ->
+    lists:map(
+        fun({_, Val}) ->
+            Val
          end,
          List).
 

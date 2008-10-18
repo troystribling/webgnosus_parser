@@ -105,11 +105,7 @@ most_frequent({count, Count}) ->
         end, 
         [], 
         qlc:q([W || W <- mnesia:table(webgnosus_words)])),
-    lists:map(
-        fun({_, Word}) ->
-            Word
-         end,
-         Result).
+    webgnosus_util:values(Result).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes

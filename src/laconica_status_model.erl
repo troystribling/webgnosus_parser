@@ -135,11 +135,7 @@ latest({count, Count}) ->
         end, 
         [], 
         qlc:q([S || S <- mnesia:table(laconica_statuses)])),
-    lists:map(
-        fun({_, Status}) ->
-            Status
-         end,
-         Result);
+    webgnosus_util:values(Result);
 
 %% return latest count of statuses for specified site
 latest({{site, Site}, {count, Count}}) ->      
@@ -149,11 +145,7 @@ latest({{site, Site}, {count, Count}}) ->
         end, 
         [], 
         qlc:q([S || S <- mnesia:table(laconica_statuses), S#laconica_statuses.site =:= Site])),
-    lists:map(
-        fun({_, Status}) ->
-            Status
-         end,
-         Result).
+    webgnosus_util:values(Result).
     
 %%--------------------------------------------------------------------
 %% Func: count/0
