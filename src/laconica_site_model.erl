@@ -55,7 +55,7 @@ clear_table() ->
 write(R) when is_record(R, laconica_sites) ->
     webgnosus_dbi:write_row(R);
 write(_) ->
-    {atomic, error}.
+    error.
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
@@ -74,8 +74,12 @@ find(all) ->
 
 %% find specified record to database
 find(RootUrl) ->
-    {atomic, Result} = webgnosus_dbi:read_row({laconica_sites, RootUrl}),
-    Result.
+    case webgnosus_dbi:read_row({laconica_sites, RootUrl}) of
+        [] ->
+            error;
+        Result ->
+            hd(Result)
+     end.
 
 %%--------------------------------------------------------------------
 %% Func: count/0

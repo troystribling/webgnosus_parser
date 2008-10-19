@@ -74,7 +74,7 @@ write({smiley, Word}) ->
     webgnosus_dbi:write_row({webgnosus_punctuation, Word, smiley});
 
 write(_) ->
-    {atomic, error}.
+    error.
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
