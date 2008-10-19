@@ -17,7 +17,6 @@
           get_urls/1,
           tokenize_and_resolve_urls/1,
           tokenize/1,
-          count_words/2,
           count_words/1,
           count_words/0,
           oldest/0,
@@ -69,7 +68,7 @@ write(R) when is_record(R, laconica_statuses) ->
     webgnosus_dbi:write_row(R);
 
 write(_) ->
-    {atomic, error}.
+    error.
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
@@ -100,9 +99,9 @@ find({{site, Site}, {text, R}}) ->
 %% find specified record to database
 find({StatusId, UserId, Site}) ->
     case webgnosus_dbi:read_row({laconica_statuses, {StatusId, UserId, Site}}) of
-        {atomic, []} ->
+        [] ->
             error;
-        {atomic, Result} ->
+        Result ->
             hd(Result)
      end.
 
@@ -248,21 +247,16 @@ get_urls(Tokens) when is_list(Tokens) ->
 %%--------------------------------------------------------------------
 % count words for all status messages and save
 count_words() ->
-    webgnosus_word_model:write_words(
-        count_words(qlc:q([S || S <- mnesia:table(laconica_statuses)]))).
-
-% count words for specified list of status messages
-count_words(StatusList) when is_list(StatusList)->
-    webgnosus_dbi:fold(
-        fun(S, Words) ->  
-            count_words(S, Words)
-        end, 
-        gb_trees:empty(), 
-        StatusList).
+    webgnosus_word_model:clear_table(),
+    webgnosus_dbi:foreach(
+    fun(S) ->  
+        count_words(S)
+    end, 
+    qlc:q([S || S <- mnesia:table(laconica_statuses)])).
 
 % count words for specified status message
-count_words(Status, Words) ->
-    webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status), Words).
+count_words(Status) ->
+    webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status)).
 
 %%====================================================================
 %% Internal functions
@@ -274,12 +268,12 @@ count_words(Status, Words) ->
 older(S, {}) ->  
     S;
 
-older(S, Old) ->  
-    SSecs  = date_to_gregorian_seconds(S),
+older(Status, Old) ->  
+    StatusSecs  = date_to_gregorian_seconds(Status),
     OldSecs = date_to_gregorian_seconds(Old),
     if 
-         SSecs < OldSecs ->
-            S;
+         StatusSecs < OldSecs ->
+            Status;
         true -> 
             Old
     end.
@@ -291,12 +285,12 @@ older(S, Old) ->
 later(S, {}) ->  
     S;
 
-later(S, Late) ->  
-    SSecs   = date_to_gregorian_seconds(S),
+later(Status, Late) ->  
+    StatusSecs   = date_to_gregorian_seconds(Status),
     LateSecs = date_to_gregorian_seconds(Late),
     if 
-         SSecs > LateSecs ->
-            S;
+         StatusSecs > LateSecs ->
+            Status;
         true -> 
             Late
     end.
@@ -305,14 +299,14 @@ later(S, Late) ->
 %% Func: later/3
 %% Description: add status to late list if later than any in list
 %%--------------------------------------------------------------------
-later(S, Late, Count) ->
-    SSecs   = date_to_gregorian_seconds(S),  
+later(Status, Late, Count) ->
+    StatusSecs   = date_to_gregorian_seconds(Status),  
     LateSize = length(Late),
     if
         LateSize < Count ->
-            lists:keysort(1, [{SSecs, S} | Late]);
+            lists:keysort(1, [{StatusSecs, Status} | Late]);
         true ->
-            update_later_list(SSecs, S, Late)
+            update_later_list(StatusSecs, Status, Late)
     end.
 
 %%--------------------------------------------------------------------
@@ -323,7 +317,7 @@ date_to_gregorian_seconds(#laconica_statuses{created_at = SD}) ->
     laconica_util:date_to_gregorian_seconds(SD).
 
 %%--------------------------------------------------------------------
-%% Func: tesxt_contains/2
+%% Func: text_contains/2
 %% Description: true if specified rexp matches status text.
 %%--------------------------------------------------------------------
 text_contains(#laconica_statuses{text = T}, R) ->

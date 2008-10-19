@@ -15,6 +15,7 @@
           count/0,
           key/1,
           word/1,
+          match_language/2,
           language/1
        ]).
 
@@ -70,7 +71,7 @@ write({english, Word}) ->
     webgnosus_dbi:write_row({webgnosus_dictionary, Word, english});
 
 write(_) ->
-    {atomic, error}.
+    error.
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
@@ -106,6 +107,28 @@ word(#webgnosus_dictionary{word = Word}) ->
 
 language(#webgnosus_dictionary{language = Language}) ->    
     Language.
+
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% text analysis
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%%--------------------------------------------------------------------
+%% Func: is_english/1
+%% Description: determine number of matches between tokens and 
+%%              specified language
+%%--------------------------------------------------------------------
+match_language(Tokens, Language) ->
+    webgnosus_dbi:fold(
+    fun(#webgnosus_dictionary{word = Word}, Count) ->  
+        case lists:member(Word, Tokens) of
+            true ->
+                Count + 1;
+            false ->
+                Count
+        end
+    end, 
+    0, 
+    qlc:q([W || W <- mnesia:table(laconica_statuses), W#webgnosus_dictionary.language =:= Language])).
+    
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods

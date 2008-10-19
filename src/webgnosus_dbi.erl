@@ -14,6 +14,8 @@
           q/1,
           limit/2,
           fold/3,
+          foreach/2,
+          transaction/1,
           count/1
        ]).
 
@@ -48,6 +50,19 @@ clear_table(Model) ->
     mnesia:clear_table(Model).
 
 %%--------------------------------------------------------------------
+%% Func: transaction/1
+%% Description: evaluate qlc query within transaction
+%%--------------------------------------------------------------------
+transaction(F) ->
+     case mnesia:transaction(F) of
+         {atomic, Val} ->
+             Val;
+         _ ->
+             aborted
+     end.
+               
+
+%%--------------------------------------------------------------------
 %% row methods
 %%--------------------------------------------------------------------
 %%--------------------------------------------------------------------
@@ -55,7 +70,7 @@ clear_table(Model) ->
 %% Description: write given record
 %%--------------------------------------------------------------------
 write_row(Row) ->
-    mnesia:transaction(
+    transaction(
         fun() -> 
             mnesia:write(Row)
         end).
@@ -65,7 +80,7 @@ write_row(Row) ->
 %% Description: write given record
 %%--------------------------------------------------------------------
 read_row(Row) ->
-    mnesia:transaction(
+    transaction(
         fun() -> 
             mnesia:read(Row)
         end).
@@ -75,7 +90,7 @@ read_row(Row) ->
 %% Description: delete specified by Oid
 %%--------------------------------------------------------------------
 delete_row(Oid) ->
-    mnesia:transaction(
+    transaction(
         fun() ->
             mnesia:delete(Oid)
         end).
@@ -88,36 +103,65 @@ delete_row(Oid) ->
 %% Description: evaluate qlc query within transaction
 %%--------------------------------------------------------------------
 q(Q) ->
-    {atomic, Val} = mnesia:transaction(
+    transaction(
         fun() ->
              qlc:e(Q)
-        end),
-    Val.       
+        end).       
 
 %%--------------------------------------------------------------------
 %% Func: limit/1
 %% Description: limit results of query to count
 %%--------------------------------------------------------------------
 limit(Q, C) ->
-   {atomic, Val} = mnesia:transaction(
+   transaction(
         fun() ->
            Cursor = qlc:cursor(Q),
            Result = qlc:next_answers(Cursor, C),
            qlc:delete_cursor(Cursor),
            Result
-        end),
-    Val.       
+        end).       
 
 %%--------------------------------------------------------------------
-%% Func: map/3
+%% Func: fold/3
 %% Description: apply function to query
 %%--------------------------------------------------------------------
 fold(F, I, Q) ->
-    {atomic, Val} = mnesia:transaction(
+    transaction(
         fun() ->
            qlc:fold(F, I, Q)
+        end).       
+
+%%--------------------------------------------------------------------
+%% Func: foreach/1
+%% Description: apply function to each record in table
+%%--------------------------------------------------------------------
+foreach(F, Table) ->
+    Result = transaction(
+        fun() -> 
+            mnesia:first(Table) 
         end),
-    Val.       
+    case Result of
+        aborted ->
+            aborted;
+        FirstKey ->
+            foreach(F, Table, FirstKey)
+    end.
+     
+foreach(_, _, '$end_of_table') ->
+    ok;       
+
+foreach(F, Table, ThisKey) ->
+    Result = transaction(
+        fun() ->
+            F(mnesia:read({Table, ThisKey})),
+            mnesia:next(Table, ThisKey)
+        end) ,
+    case Result of
+        aborted ->
+            aborted;
+        NextKey ->
+            foreach(F, Table, NextKey)
+    end.
 
 %%--------------------------------------------------------------------
 %% Func: count/0
@@ -131,7 +175,6 @@ count(Table) ->
          end, 
          0,
          qlc:q([S || S <- mnesia:table(Table)])).
-
 
 %%====================================================================
 %%% Internal functions

@@ -12,16 +12,15 @@
           delete/1,
           find/1,
           count/0,
-          total_word_count/0,
-          word_count/1,
+          count/1,
           word/1,
-          word_frequency/1,
-          write_words/1,
+          frequency/1,
+          pos/1,
           key/1,
           most_frequent/1,
           dump/1,
-          sort/1,
-          count_words/2
+          total_word_count/0,
+          count_words/1
        ]).
 
 %% include
@@ -38,7 +37,7 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(webgnosus_words, [{attributes, record_info(fields, webgnosus_words)}, {disc_copies, [node()]}]).
+    webgnosus_dbi:create_table(webgnosus_words, [{attributes, record_info(fields, webgnosus_words)}, {disc_only_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
@@ -67,12 +66,13 @@ write(R) when is_record(R, webgnosus_words) ->
 write(R) when is_list(R) ->
     webgnosus_dbi:write_row({webgnosus_words, 
         webgnosus_util:get_attribute(word, R),
-        webgnosus_util:get_attribute(word_count, R),
-        webgnosus_util:get_attribute(word_frequency, R)
+        webgnosus_util:get_attribute(count, R),
+        webgnosus_util:get_attribute(frequency, R),
+        webgnosus_util:get_attribute(pos, R)
     });
 
 write(_) ->
-    {atomic, error}.
+    error.
 
 %% return row count
 count() ->    
@@ -94,18 +94,20 @@ delete(Word) ->
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(webgnosus_words)])).
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(webgnosus_words)]));
 
-%%--------------------------------------------------------------------
-%% Func: sort/1
-%% Description: counts words in tokenized document
-%%--------------------------------------------------------------------
-sort(Words) when is_list(Words) ->
-    lists:sort(        
-        fun(#webgnosus_words{word_count = WordCountA}, #webgnosus_words{word_count = WordCountB}) ->
-            WordCountA > WordCountB
-        end,
-        Words).
+%% find all models where text matches specified rexp
+find({word, R}) ->
+    webgnosus_dbi:q(qlc:q([W || W <- mnesia:table(webgnosus_words), word_contains(W, R)]));
+
+%% find specified record to database
+find({Word}) ->
+    case webgnosus_dbi:read_row({webgnosus_words, Word}) of
+        [] ->
+            error;
+        Result ->
+            hd(Result)
+     end.
 
 %%--------------------------------------------------------------------
 %% Func: most_frequent/1
@@ -128,7 +130,7 @@ most_frequent({count, Count}) ->
 %% return sorted list of most frequent words
 total_word_count() ->      
     webgnosus_dbi:fold(
-        fun(#webgnosus_words{word_count = WordCount}, Count) ->  
+        fun(#webgnosus_words{count = WordCount}, Count) ->  
             Count + WordCount
         end, 
         0, 
@@ -145,7 +147,7 @@ dump(File) ->
                 fun(W) ->
                     io:format(Fh, "~p.~n", [W])
                 end,
-                sort(find(all))),
+                find(all)),
             file:close(Fh);
         Error ->
             Error
@@ -157,10 +159,13 @@ dump(File) ->
 word(#webgnosus_words{word = Attr}) ->    
     Attr.
 
-word_count(#webgnosus_words{word_count = Attr}) ->    
+count(#webgnosus_words{count = Attr}) ->    
     Attr.
 
-word_frequency(#webgnosus_words{word_frequency = Attr}) ->    
+frequency(#webgnosus_words{frequency = Attr}) ->    
+    Attr.
+
+pos(#webgnosus_words{pos = Attr}) ->    
     Attr.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -170,32 +175,18 @@ word_frequency(#webgnosus_words{word_frequency = Attr}) ->
 %% Func: count_words/2
 %% Description: counts words in tokenized document
 %%--------------------------------------------------------------------
-count_words(Tokens, Words) ->
-    lists:foldl(        
-        fun(T, W) ->
-            case gb_trees:is_defined(T, W) of
-                true ->
-                    gb_trees:update(T, gb_trees:get(T, W) + 1, W);
-                false ->
-                    gb_trees:insert(T, 1, W)
+count_words(Tokens) ->
+    lists:foreach(        
+        fun(T) ->
+            case find({T}) of
+                error ->
+                    write([{word, T}, {count, 1}]);
+                #webgnosus_words{count = Count, frequency = Frequency, pos = Pos} ->
+                    write([{word, T}, {count, Count + 1}, {frequency, Frequency}, {pos, Pos}])                    
             end
         end,
-        Words,
         Tokens).
     
-%%--------------------------------------------------------------------
-%% Func: write_words/1
-%% Description: counts words in tokenized document
-%%--------------------------------------------------------------------
-write_words(Words) ->
-    clear_table(),
-    Total = lists:sum(gb_trees:values(Words)),
-    lists:foreach(        
-        fun({W, C}) ->
-            write([{word, W}, {word_count, C}, {word_frequency, C/Total}])
-        end,
-        gb_trees:to_list(Words)).
-
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -214,7 +205,7 @@ key(Word) ->
 %% Func: later/3
 %% Description: build list of words with largest count
 %%--------------------------------------------------------------------
-larger_count(#webgnosus_words{word_count = WordCount} = Word, Large, Count) ->
+larger_count(#webgnosus_words{count = WordCount} = Word, Large, Count) ->
     if
         length(Large) < Count ->
             lists:keysort(1, [{WordCount, Word} | Large]);
@@ -235,4 +226,15 @@ update_larger_count_list(WordCount, Word, [{LeastLargeCount, _} | _] = Large) ->
             Large
     end.
 
+%%--------------------------------------------------------------------
+%% Func: word_contains/2
+%% Description: true if specified rexp matches status text.
+%%--------------------------------------------------------------------
+word_contains(#webgnosus_words{word = W}, R) ->
+    case regexp:first_match(W, R) of
+        {match, _, _} ->
+            true;
+        _ -> 
+            false
+    end.
 

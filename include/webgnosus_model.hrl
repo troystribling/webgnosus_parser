@@ -4,8 +4,9 @@
 -record(webgnosus_words, 
     {
         word,
-        word_count,
-        word_frequency
+        count,
+        frequency,
+        pos
     }
 ).
 
