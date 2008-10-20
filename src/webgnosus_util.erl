@@ -9,7 +9,8 @@
           get_matches/2,
           replace_at_position/3,
           values/1,
-          filter/2
+          filter/2,
+          dump/2
         ]).
 
 %%====================================================================
@@ -78,5 +79,22 @@ replace_at_position({Pos, Length}, Rep, Doc) ->
     {Head, Tail} = lists:split(Pos - 1, Doc),
     NewTail = lists:sublist(Tail, Length + 1, length(Tail) - Length),
     lists:concat([Head, Rep, NewTail]).
+
+%%--------------------------------------------------------------------
+%% Func: dump/2
+%% Description: dump list of terms to specified file
+%%--------------------------------------------------------------------
+dump(File, List) ->      
+    case file:open(File, write) of
+        {ok, Fh} ->
+            lists:foreach(
+                fun(W) ->
+                    io:format(Fh, "~p.~n", [W])
+                end,
+                List),
+            file:close(Fh);
+        Error ->
+            Error
+    end.
 
 

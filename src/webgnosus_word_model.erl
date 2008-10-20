@@ -18,8 +18,9 @@
           pos/1,
           key/1,
           most_frequent/1,
-          dump/1,
+          dump/2,
           total_word_count/0,
+          calculate_word_frequency/0,
           count_words/1
        ]).
 
@@ -136,23 +137,6 @@ total_word_count() ->
         0, 
         qlc:q([W || W <- mnesia:table(webgnosus_words)])).
 
-%%--------------------------------------------------------------------
-%% Func: dump/1
-%% Description: dump word frequencies to file after sorting
-%%--------------------------------------------------------------------
-dump(File) ->      
-    case file:open(File, write) of
-        {ok, Fh} ->
-            lists:foreach(
-                fun(W) ->
-                    io:format(Fh, "~p.~n", [W])
-                end,
-                find(all)),
-            file:close(Fh);
-        Error ->
-            Error
-    end.
-
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -172,7 +156,7 @@ pos(#webgnosus_words{pos = Attr}) ->
 %% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
-%% Func: count_words/2
+%% Func: count_words/1
 %% Description: counts words in tokenized document
 %%--------------------------------------------------------------------
 count_words(Tokens) ->
@@ -186,7 +170,28 @@ count_words(Tokens) ->
             end
         end,
         Tokens).
-    
+
+%%--------------------------------------------------------------------
+%% Func: calculate_word_frequency/0
+%% Description: determine word counts for status text
+%%--------------------------------------------------------------------
+% count words for all status messages and save
+calculate_word_frequency() ->
+    Total = total_word_count(),
+    webgnosus_dbi:foreach(
+        fun(#webgnosus_words{word = Word, count = Count, pos = Pos}) ->  
+            write([{word, Word}, {count, Count}, {frequency, Count/Total}, {pos, Pos}])
+        end, 
+        webgnosus_words).
+
+
+%%--------------------------------------------------------------------
+%% Func: dump/2
+%% Description: dump list of terms to specified file
+%%--------------------------------------------------------------------
+dump(File, Count) ->      
+    webgnosus_util:dump(File, most_frequent({count, Count})).
+
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

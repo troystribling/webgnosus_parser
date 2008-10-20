@@ -151,9 +151,14 @@ foreach(_, _, '$end_of_table') ->
     ok;       
 
 foreach(F, Table, ThisKey) ->
+    case read_row({Table, ThisKey}) of
+        aborted ->
+            aborted;
+        Row ->
+            F(Row)
+    end,
     Result = transaction(
         fun() ->
-            F(mnesia:read({Table, ThisKey})),
             mnesia:next(Table, ThisKey)
         end) ,
     case Result of

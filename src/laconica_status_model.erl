@@ -249,10 +249,10 @@ get_urls(Tokens) when is_list(Tokens) ->
 count_words() ->
     webgnosus_word_model:clear_table(),
     webgnosus_dbi:foreach(
-    fun(S) ->  
-        count_words(S)
-    end, 
-    qlc:q([S || S <- mnesia:table(laconica_statuses)])).
+        fun(S) ->  
+            count_words(hd(S))
+        end, 
+        laconica_statuses).
 
 % count words for specified status message
 count_words(Status) ->
