@@ -118,16 +118,16 @@ language(#webgnosus_dictionary{language = Language}) ->
 %%--------------------------------------------------------------------
 match_language(Tokens, Language) ->
     webgnosus_dbi:fold(
-    fun(#webgnosus_dictionary{word = Word}, Count) ->  
-        case lists:member(Word, Tokens) of
-            true ->
-                Count + 1;
-            false ->
-                Count
-        end
-    end, 
-    0, 
-    qlc:q([W || W <- mnesia:table(laconica_statuses), W#webgnosus_dictionary.language =:= Language])).
+        fun(#webgnosus_dictionary{word = Word}, Count) ->  
+            case lists:member(Word, Tokens) of
+                true ->
+                    Count + 1;
+                false ->
+                    Count
+            end
+         end, 
+        0, 
+        qlc:q([W || W <- mnesia:table(laconica_statuses), W#webgnosus_dictionary.language =:= Language])).
     
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
