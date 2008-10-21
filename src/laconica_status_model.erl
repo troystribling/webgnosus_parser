@@ -93,7 +93,7 @@ find({text, R}) ->
     webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R)]));
 
 %% find all models where text matches specified rexp and specified site
-find({{site, Site}, {text, R}}) ->
+find([{site, Site}, {text, R}]) ->
     webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), text_contains(S, R), S#laconica_statuses.site =:= Site]));
 
 %% find specified record to database
@@ -138,7 +138,7 @@ latest({count, Count}) ->
     webgnosus_util:values(Result);
 
 %% return latest count of statuses for specified site
-latest({{site, Site}, {count, Count}}) ->      
+latest([{site, Site}, {count, Count}]) ->      
     Result = webgnosus_dbi:fold(
         fun(S, Late) ->  
             later(S, Late, Count)

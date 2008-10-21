@@ -122,6 +122,16 @@ most_frequent({count, Count}) ->
         end, 
         [], 
         qlc:q([W || W <- mnesia:table(webgnosus_words)])),
+    webgnosus_util:values(Result);
+
+%% return sorted list of most frequent words filtered by 
+most_frequent([{word, RegExp}, {count, Count}]) ->      
+    Result = webgnosus_dbi:fold(
+        fun(W, Words) ->  
+            larger_count(W, Words, Count)
+        end, 
+        [], 
+        qlc:q([W || W <- mnesia:table(webgnosus_words), word_contains(W, RegExp)])),
     webgnosus_util:values(Result).
 
 %%--------------------------------------------------------------------
@@ -189,8 +199,11 @@ calculate_word_frequency() ->
 %% Func: dump/2
 %% Description: dump list of terms to specified file
 %%--------------------------------------------------------------------
-dump(File, Count) ->      
-    webgnosus_util:dump(File, most_frequent({count, Count})).
+dump(File, {count, Count}) ->      
+    webgnosus_util:dump(File, lists:reverse(most_frequent({count, Count})));
+
+dump(File, [{word, RegExp}, {count, Count}]) ->      
+    webgnosus_util:dump(File, lists:reverse(most_frequent([{word, RegExp}, {count, Count}]))).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
