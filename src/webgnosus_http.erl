@@ -46,12 +46,12 @@ is_live_url(Url) ->
 %% Description: return redirect URL.
 %%--------------------------------------------------------------------
 get_redirect_url(Url) ->
-    HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}], []),
-    case HttpDoc of
-        {ok, {{_,301,_}, Headers, _}} -> 
-            webgnosus_util:get_attribute("location", Headers);
-        _ -> 
-            Url
+io:format("~p~n", [Url]),   
+    case valid_url(Url) of
+        true ->
+            extract_redirect_url_from_header(Url);
+        false ->
+             Url
     end.
 
 %%--------------------------------------------------------------------
@@ -79,13 +79,30 @@ parse_xml(Document) ->
 %%% Internal functions
 %%====================================================================
 %%--------------------------------------------------------------------
-%% Func: get_location_from_headers/1
-%% Description: get location from 301 header.
+%% Func: extract_redirect_url_from_header/1
+%% Description: return redirect URL.
 %%--------------------------------------------------------------------
-get_location_from_headers(Headers) ->
-    case lists:keysearch("location", 1, Headers) of
-        {value, {"location", Location}} ->
-            Location;
-        _ ->
-            error
+extract_redirect_url_from_header(Url) ->
+    HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}, {timeout, 15000}], []),
+    case HttpDoc of
+        {ok, {{_, 301 ,_}, Headers, _}} -> 
+            webgnosus_util:get_attribute("location", Headers);
+        _ -> 
+            Url
     end.
+
+%%--------------------------------------------------------------------
+%% Func: valid_url/1
+%% Description: true if url is valid.
+%%--------------------------------------------------------------------
+valid_url(Url) ->
+    case regexp:first_match(Url, "^http://$") of
+        {match, _, _} -> 
+            false;
+        _ -> 
+            is_ascii(Url)
+    end.
+ 
+is_ascii(Url) ->
+    lists:all(fun(X) -> X < 128 end, Url).
+ 

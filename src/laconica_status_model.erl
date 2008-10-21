@@ -215,6 +215,7 @@ tokenize_and_resolve_urls(#laconica_statuses{text = S}) ->
             webgnosus_http:get_redirect_url(U)
         end, 
         Urls),
+io:format("~p~n", [MapUrls]),       
     lists:append(
         lists:subtract(Toks, Urls),
         MapUrls
@@ -256,6 +257,7 @@ count_words() ->
 
 % count words for specified status message
 count_words(Status) ->
+io:format("~p~n", [Status]),        
     webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status)).
 
 %%====================================================================
