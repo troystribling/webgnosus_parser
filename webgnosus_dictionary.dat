@@ -4,7 +4,27 @@
   ]
 }.
 
-{webgnosus_dictionary, "the",     english}.
+{webgnosus_dictionary, "the",   english}.
+{webgnosus_dictionary, "to",    english}.
+{webgnosus_dictionary, "is",    english}.
+{webgnosus_dictionary, "and",   english}.
+{webgnosus_dictionary, "of",    english}.
+{webgnosus_dictionary, "in",    english}.
+{webgnosus_dictionary, "for",   english}.
+{webgnosus_dictionary, "on",    english}.
+{webgnosus_dictionary, "my",    english}.
+{webgnosus_dictionary, "you",   english}.
+{webgnosus_dictionary, "that",  english}.
+{webgnosus_dictionary, "this",  english}.
+{webgnosus_dictionary, "at",    english}.
+{webgnosus_dictionary, "with",  english}.
+{webgnosus_dictionary, "have",  english}.
+{webgnosus_dictionary, "has",   english}.
+{webgnosus_dictionary, "will",  english}.
+{webgnosus_dictionary, "be",    english}.
+{webgnosus_dictionary, "not",   english}.
+{webgnosus_dictionary, "me",    english}.
+{webgnosus_dictionary, "i",     english}.
 
 
 
