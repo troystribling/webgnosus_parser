@@ -138,6 +138,17 @@ latest({count, Count}) ->
         qlc:q([S || S <- mnesia:table(laconica_statuses)])),
     webgnosus_util:values(Result);
 
+%% return latest count of statuses
+latest([{language, Language}, {count, Count}]) ->      
+    Dictionary = webgnosus_dictionary_model:load_dictionary(Language),
+    Result = webgnosus_dbi:fold(
+        fun(S, Late) ->  
+            later(S, Late, Count)
+        end, 
+        [], 
+        qlc:q([S || S <- mnesia:table(laconica_statuses), is_language(S, Dictionary)])),
+    webgnosus_util:values(Result);
+
 %% return latest count of statuses for specified site
 latest([{site, Site}, {count, Count}]) ->      
     Result = webgnosus_dbi:fold(
@@ -209,6 +220,9 @@ oldest({site, Site}) ->
 %% Description: tokenize status text and resolve redirected URLs
 %%--------------------------------------------------------------------
 tokenize_and_resolve_urls(#laconica_statuses{text = S}) ->
+   tokenize_and_resolve_urls(S);
+
+tokenize_and_resolve_urls(S) ->
    Toks =  webgnosus_text:tokenize(S),
    Urls = get_urls(Toks),
    MapUrls = lists:map(
@@ -220,12 +234,15 @@ tokenize_and_resolve_urls(#laconica_statuses{text = S}) ->
         lists:subtract(Toks, Urls),
         MapUrls
     ).
-   
+
 %%--------------------------------------------------------------------
 %% Func: tokenize_amd_resolve_urls/1
 %% Description: tokenize status text and resolve redirected URLs
 %%--------------------------------------------------------------------
 tokenize(#laconica_statuses{text = S}) ->
+  tokenize(S);
+
+tokenize(S) ->
    webgnosus_text:tokenize(S).
 
 %%--------------------------------------------------------------------
@@ -233,8 +250,11 @@ tokenize(#laconica_statuses{text = S}) ->
 %% Description: return true if status is in specified language
 %%--------------------------------------------------------------------
 is_language(#laconica_statuses{text = S}, Dictionary) ->
+   is_language(webgnosus_text:to_lower(S), Dictionary);
+
+is_language(S, Dictionary) ->
    webgnosus_dictionary_model:is_language(S, Dictionary).
-    
+
 %%--------------------------------------------------------------------
 %% Func: get_tags/1
 %% Description: return all tags in status
@@ -251,20 +271,28 @@ get_urls(Tokens) when is_list(Tokens) ->
 
 %%--------------------------------------------------------------------
 %% Func: count_words
-%% Description: determine word counts for status text
+%% Description: determine word counts for english status text
 %%--------------------------------------------------------------------
 % count words for all status messages and save
 count_words() ->
     webgnosus_word_model:clear_table(),
+    Dictionary = webgnosus_dictionary_model:load_dictionary(english),
     webgnosus_dbi:foreach(
         fun(S) ->  
-            count_words(hd(S))
+            count_words(hd(S), Dictionary)
         end, 
         laconica_statuses).
 
 % count words for specified status message
-count_words(Status) ->
-    webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status)).
+count_words(#laconica_statuses{text = S}, Dictionary) ->
+    LcText = webgnosus_text:to_lower(S),
+    count_words(LcText, is_language(LcText, Dictionary));
+
+count_words(Status, true) ->
+    webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status));
+
+count_words(_, false) ->
+    void.
 
 %%====================================================================
 %% Internal functions
