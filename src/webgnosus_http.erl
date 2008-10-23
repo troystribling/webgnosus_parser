@@ -46,7 +46,6 @@ is_live_url(Url) ->
 %% Description: return redirect URL.
 %%--------------------------------------------------------------------
 get_redirect_url(Url) ->
-io:format("~p~n", [Url]),   
     case valid_url(Url) of
         true ->
             extract_redirect_url_from_header(Url);

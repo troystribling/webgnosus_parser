@@ -19,6 +19,7 @@
           tokenize/1,
           count_words/1,
           count_words/0,
+          is_language/2,
           oldest/0,
           oldest/1,
           latest/0,
@@ -215,7 +216,6 @@ tokenize_and_resolve_urls(#laconica_statuses{text = S}) ->
             webgnosus_http:get_redirect_url(U)
         end, 
         Urls),
-io:format("~p~n", [MapUrls]),       
     lists:append(
         lists:subtract(Toks, Urls),
         MapUrls
@@ -227,6 +227,13 @@ io:format("~p~n", [MapUrls]),
 %%--------------------------------------------------------------------
 tokenize(#laconica_statuses{text = S}) ->
    webgnosus_text:tokenize(S).
+
+%%--------------------------------------------------------------------
+%% Func: is_language/1
+%% Description: return true if status is in specified language
+%%--------------------------------------------------------------------
+is_language(#laconica_statuses{text = S}, Dictionary) ->
+   webgnosus_dictionary_model:is_language(S, Dictionary).
     
 %%--------------------------------------------------------------------
 %% Func: get_tags/1
@@ -257,7 +264,6 @@ count_words() ->
 
 % count words for specified status message
 count_words(Status) ->
-io:format("~p~n", [Status]),        
     webgnosus_word_model:count_words(tokenize_and_resolve_urls(Status)).
 
 %%====================================================================

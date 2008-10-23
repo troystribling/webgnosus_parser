@@ -15,8 +15,9 @@
           count/0,
           key/1,
           word/1,
-          match_language/2,
-          language/1
+          language/1,
+          is_language/2,
+          load_dictionary/1
        ]).
 
 %% include
@@ -116,20 +117,38 @@ language(#webgnosus_dictionary{language = Language}) ->
 %% Description: determine number of matches between tokens and 
 %%              specified language
 %%--------------------------------------------------------------------
-match_language(Tokens, Language) ->
-    webgnosus_dbi:fold(
-        fun(#webgnosus_dictionary{word = Word}, Count) ->  
-            case lists:member(Word, Tokens) of
-                true ->
-                    Count + 1;
-                false ->
-                    Count
-            end
-         end, 
-        0, 
-        qlc:q([W || W <- mnesia:table(laconica_statuses), W#webgnosus_dictionary.language =:= Language])).
+is_language(Document, Dictionary) ->
+    case regexp:first_match(Document, Dictionary) of
+        {match, _, _} ->
+            true;
+        _ ->
+            false
+    end.
     
+%%--------------------------------------------------------------------
+%% Func: load_dictionary/1
+%% Description: load text dump of table
+%%--------------------------------------------------------------------
+load_dictionary(Language) ->
+    Words = lists:map(
+        fun (W) ->
+            word(W)
+        end,
+        find(Language)),
+    build_dictionary("", Words).
+    
+build_dictionary("", [Word|Words]) ->    
+    build_dictionary(lists:concat([build_dictionary_entry(Word)]), Words);
 
+build_dictionary(Dictionary, []) ->    
+    Dictionary;
+
+build_dictionary(Dictionary, [Word|Words]) ->    
+    build_dictionary(lists:concat([Dictionary, "|", build_dictionary_entry(Word)]), Words).
+
+build_dictionary_entry(Word) ->    
+    lists:concat([lists:concat(["$", Word, "\\s|"]), lists:concat(["\\s", Word, "\\s|"]), lists:concat(["\\s", Word, "^"])]).
+    
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

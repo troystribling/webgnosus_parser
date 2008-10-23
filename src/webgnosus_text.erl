@@ -6,7 +6,8 @@
 %% API
 -export([
           prepare/1,
-          tokenize/1
+          tokenize/1,
+          to_lower/1
         ]).
 
 -compile(export_all).
@@ -32,6 +33,13 @@ prepare(Doc) ->
                 pad_single_quotes(
                     remove_new_lines(
                         remove_smiley(Doc)))))).
+
+%%--------------------------------------------------------------------
+%% Func: prepare/1
+%% Description: prepare text for processing.
+%%--------------------------------------------------------------------
+to_lower(Doc) ->
+    string:to_lower(Doc).
 
 %%====================================================================
 %%% Internal functions
@@ -219,7 +227,7 @@ remove_new_lines(Doc) ->
 %% Description: return list of document words and puctuation.
 %%--------------------------------------------------------------------
 tokens(Doc) ->
-    case regexp:split(string:to_lower(string:strip(Doc)), "\s+") of
+    case regexp:split(string:strip(Doc), "\s+") of
         {ok, NewDoc} ->
             NewDoc;
         X -> 
