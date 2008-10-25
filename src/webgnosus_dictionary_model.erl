@@ -17,6 +17,7 @@
           word/1,
           language/1,
           is_language/2,
+          is_not_language/2,
           load_dictionary/1
        ]).
 
@@ -103,17 +104,17 @@ count() ->
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% attributes
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-word(#webgnosus_dictionary{word = Word}) ->    
-    Word.
+word(#webgnosus_dictionary{word = Attr}) ->    
+    Attr.
 
-language(#webgnosus_dictionary{language = Language}) ->    
-    Language.
+language(#webgnosus_dictionary{language = Attr}) ->    
+    Attr.
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
-%% Func: is_english/1
+%% Func: is_language/1
 %% Description: determine number of matches between tokens and 
 %%              specified language
 %%--------------------------------------------------------------------
@@ -123,6 +124,14 @@ is_language(Document, Dictionary) ->
             true;
         _ ->
             false
+    end.
+
+is_not_language(Document, Dictionary) ->
+    case regexp:first_match(Document, Dictionary) of
+        {match, _, _} ->
+            false;
+        _ ->
+            true
     end.
     
 %%--------------------------------------------------------------------
