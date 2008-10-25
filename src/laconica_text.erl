@@ -72,7 +72,7 @@ get_urls(Tokens) when is_list(Tokens) ->
 
 %%--------------------------------------------------------------------
 %% Func: dump_language/2
-%% Description: dump status text messages of specified lnaguage to file
+%% Description: dump status text messages of specified language to file
 %%--------------------------------------------------------------------
 dump_status_text([{file, File}, {language, Language}]) -> 
     dump(
@@ -85,8 +85,35 @@ dump_status_text([{file, File}, {language, Language}]) ->
             end
         end,
         File,
-        Language).
+        Language);
 
+%% dump status text messages not of specified language to file
+dump_status_text([negate, {file, File}, {language, Language}]) -> 
+    dump(
+        fun (Fh, S, Dictionary) ->
+            case not is_language(S, Dictionary) of 
+                true ->
+                   io:format(Fh, "~p~n~n", [S]);
+                false ->
+                    void
+            end
+        end,
+        File,
+        Language);
+
+%% dump status text messages niot of specified language to file
+dump_status_text([prepare, {file, File}, {language, Language}]) -> 
+    dump(
+        fun (Fh, S, Dictionary) ->
+            case not is_language(S, Dictionary) of 
+                true ->
+                   io:format(Fh, "~p~n~n", [webgnosus_text:prepare(S)]);
+                false ->
+                    void
+            end
+        end,
+        File,
+        Language).
 
 %%====================================================================
 %%% Internal functions
