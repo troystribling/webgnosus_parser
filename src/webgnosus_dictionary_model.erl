@@ -16,8 +16,7 @@
           key/1,
           word/1,
           language/1,
-          is_language/2,
-          is_not_language/2,
+          in_dictionary/1,
           load_dictionary/1
        ]).
 
@@ -114,26 +113,34 @@ language(#webgnosus_dictionary{language = Attr}) ->
 %% text analysis
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
-%% Func: is_language/1
+%% Func: in_dictionary/1
 %% Description: determine number of matches between tokens and 
 %%              specified language
 %%--------------------------------------------------------------------
-is_language(Document, Dictionary) ->
+in_dictionary([{document, Document}, {dictionary, Dictionary}]) ->
     case regexp:first_match(Document, Dictionary) of
         {match, _, _} ->
             true;
         _ ->
             false
+    end;
+
+in_dictionary([{count, Count}, {document, Document}, {dictionary, Dictionary}]) ->
+    case regexp:matches(Document, Dictionary) of
+        {match, []} ->
+            false;
+        {match, Matches} ->
+            NumberMatches = length(Matches),
+            if
+                NumberMatches < Count ->
+                    false;
+                true ->
+                    true                
+            end;
+        _ ->
+            false
     end.
 
-is_not_language(Document, Dictionary) ->
-    case regexp:first_match(Document, Dictionary) of
-        {match, _, _} ->
-            false;
-        _ ->
-            true
-    end.
-    
 %%--------------------------------------------------------------------
 %% Func: load_dictionary/1
 %% Description: load text dump of table
@@ -156,7 +163,8 @@ build_dictionary(Dictionary, [Word|Words]) ->
     build_dictionary(lists:concat([Dictionary, "|", build_dictionary_entry(Word)]), Words).
 
 build_dictionary_entry(Word) ->    
-    lists:concat([lists:concat(["$", Word, "\\s|"]), lists:concat(["\\s", Word, "\\s|"]), lists:concat(["\\s", Word, "^"])]).
+    lists:concat([lists:concat(["^", Word, "\\s|"]), lists:concat(["\\s", Word, "\\s|"]), 
+        lists:concat(["\\s", Word, "$|"]), lists:concat(["\\s", Word, "\\.|"]), lists:concat(["\\s", Word, "\\,"])]).
     
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods

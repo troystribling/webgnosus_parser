@@ -5,10 +5,9 @@
 
 %% API
 -export([
-          tokenize_and_resolve_urls/1,
           tokenize/1,
           prepare/1,
-          is_language/2,
+          in_dictionary/2,
           get_tags/1,
           get_urls/1,
           dump_status_text/1
@@ -18,23 +17,6 @@
 %%====================================================================
 %% API
 %%====================================================================
-%%--------------------------------------------------------------------
-%% Func: tokenize_and_resolve_urls/1
-%% Description: tokenize status text and resolve redirected URLs
-%%--------------------------------------------------------------------
-tokenize_and_resolve_urls(S) ->
-   Toks =  webgnosus_text:tokenize(S),
-   Urls = get_urls(Toks),
-   MapUrls = lists:map(
-        fun(U) ->  
-            webgnosus_http:get_redirect_url(U)
-        end, 
-        Urls),
-    lists:append(
-        lists:subtract(Toks, Urls),
-        MapUrls
-    ).
-
 %%--------------------------------------------------------------------
 %% Func: tokenize/1
 %% Description: tokenize status text and resolve redirected URLs
@@ -50,11 +32,11 @@ prepare(S) ->
    webgnosus_text:prepare(S).
 
 %%--------------------------------------------------------------------
-%% Func: is_language/1
+%% Func: in_dictionary/1
 %% Description: return true if status is in specified language
 %%--------------------------------------------------------------------
-is_language(S, Dictionary) ->
-   webgnosus_dictionary_model:is_language(S, Dictionary) and webgnosus_text:is_ascii(S).
+in_dictionary(S, Dictionary) ->
+   webgnosus_dictionary_model:in_dictionary([{document, S}, {dictionary, Dictionary}]) and webgnosus_text:is_ascii(S).
 
 %%--------------------------------------------------------------------
 %% Func: get_tags/1
@@ -77,9 +59,9 @@ get_urls(Tokens) when is_list(Tokens) ->
 dump_status_text([{file, File}, {language, Language}]) -> 
     dump(
         fun (Fh, S, Dictionary) ->
-            case is_language(S, Dictionary) of 
+            case in_dictionary(S, Dictionary) of 
                 true ->
-                   io:format(Fh, "~p~n~n", [S]);
+                   io:format(Fh, "~p.~n", [S]);
                 false ->
                     void
             end
@@ -91,9 +73,9 @@ dump_status_text([{file, File}, {language, Language}]) ->
 dump_status_text([negate, {file, File}, {language, Language}]) -> 
     dump(
         fun (Fh, S, Dictionary) ->
-            case not is_language(S, Dictionary) of 
+            case not in_dictionary(S, Dictionary) of 
                 true ->
-                   io:format(Fh, "~p~n~n", [S]);
+                   io:format(Fh, "~p.~n", [S]);
                 false ->
                     void
             end
@@ -105,9 +87,9 @@ dump_status_text([negate, {file, File}, {language, Language}]) ->
 dump_status_text([prepare, {file, File}, {language, Language}]) -> 
     dump(
         fun (Fh, S, Dictionary) ->
-            case not is_language(S, Dictionary) of 
+            case in_dictionary(S, Dictionary) of 
                 true ->
-                   io:format(Fh, "~p~n~n", [webgnosus_text:prepare(S)]);
+                   io:format(Fh, "~s~n", [prepare(webgnosus_text:replace_shortened_urls(S))]);
                 false ->
                     void
             end

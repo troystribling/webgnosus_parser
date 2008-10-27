@@ -4,27 +4,48 @@
   ]
 }.
 
-{webgnosus_dictionary, "the",   english}.
+{webgnosus_dictionary, "i",     english}.
+{webgnosus_dictionary, "at",    english}.
+{webgnosus_dictionary, "be",    english}.
+{webgnosus_dictionary, "by",    english}.
 {webgnosus_dictionary, "to",    english}.
 {webgnosus_dictionary, "is",    english}.
-{webgnosus_dictionary, "and",   english}.
-{webgnosus_dictionary, "of",    english}.
 {webgnosus_dictionary, "in",    english}.
-{webgnosus_dictionary, "for",   english}.
-{webgnosus_dictionary, "on",    english}.
 {webgnosus_dictionary, "my",    english}.
+{webgnosus_dictionary, "me",    english}.
+{webgnosus_dictionary, "on",    english}.
+{webgnosus_dictionary, "of",    english}.
+{webgnosus_dictionary, "up",    english}.
+{webgnosus_dictionary, "so",    english}.
+{webgnosus_dictionary, "we",    english}.
+{webgnosus_dictionary, "and",   english}.
+{webgnosus_dictionary, "are",   english}.
+{webgnosus_dictionary, "but",   english}.
+{webgnosus_dictionary, "for",   english}.
+{webgnosus_dictionary, "get",   english}.
+{webgnosus_dictionary, "got",   english}.
+{webgnosus_dictionary, "has",   english}.
+{webgnosus_dictionary, "not",   english}.
+{webgnosus_dictionary, "new",   english}.
+{webgnosus_dictionary, "now",   english}.
+{webgnosus_dictionary, "one",   english}.
+{webgnosus_dictionary, "the",   english}.
+{webgnosus_dictionary, "who",   english}.
 {webgnosus_dictionary, "you",   english}.
+{webgnosus_dictionary, "why",   english}.
+{webgnosus_dictionary, "your",  english}.
+{webgnosus_dictionary, "good",  english}.
+{webgnosus_dictionary, "have",  english}.
+{webgnosus_dictionary, "here",  english}.
+{webgnosus_dictionary, "just",  english}.
+{webgnosus_dictionary, "more",  english}.
 {webgnosus_dictionary, "that",  english}.
 {webgnosus_dictionary, "this",  english}.
-{webgnosus_dictionary, "at",    english}.
+{webgnosus_dictionary, "time",  english}.
 {webgnosus_dictionary, "with",  english}.
-{webgnosus_dictionary, "have",  english}.
-{webgnosus_dictionary, "has",   english}.
 {webgnosus_dictionary, "will",  english}.
-{webgnosus_dictionary, "be",    english}.
-{webgnosus_dictionary, "not",   english}.
-{webgnosus_dictionary, "me",    english}.
-{webgnosus_dictionary, "i",     english}.
+{webgnosus_dictionary, "there", english}.
+{webgnosus_dictionary, "would", english}.
 
 
 

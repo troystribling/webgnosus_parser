@@ -82,11 +82,23 @@ parse_xml(Document) ->
 %% Description: return redirect URL.
 %%--------------------------------------------------------------------
 extract_redirect_url_from_header(Url) ->
-    HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}, {timeout, 15000}], []),
-    case HttpDoc of
-        {ok, {{_, 301 ,_}, Headers, _}} -> 
-            webgnosus_util:get_attribute("location", Headers);
-        _ -> 
+    extract_redirect_url_from_header(Url, 0).
+
+extract_redirect_url_from_header(Url, Count) ->
+    if
+        Count < 5 ->
+            HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}, {timeout, 15000}], []),
+            case HttpDoc of
+                {ok, {{_, 301 ,_}, Headers, _}} -> 
+                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
+                {ok, {{_, 302 ,_}, Headers, _}} -> 
+                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
+                {ok, {{_, 303 ,_}, Headers, _}} -> 
+                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
+                _ -> 
+                    Url
+            end;
+        true ->
             Url
     end.
 
@@ -99,9 +111,6 @@ valid_url(Url) ->
         {match, _, _} -> 
             false;
         _ -> 
-            is_ascii(Url)
+            lists:all(fun(X) -> X < 128 end, Url)
     end.
- 
-is_ascii(Url) ->
-    lists:all(fun(X) -> X < 128 end, Url).
- 
+  

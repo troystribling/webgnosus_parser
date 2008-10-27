@@ -147,7 +147,7 @@ latest([{language, Language}, {count, Count}]) ->
             later(S, Late, Count)
         end, 
         [], 
-        qlc:q([S || S <- mnesia:table(laconica_statuses), is_language(S, Dictionary)])),
+        qlc:q([S || S <- mnesia:table(laconica_statuses), in_dictionary(S, Dictionary)])),
     webgnosus_util:values(Result);
 
 %% return latest count of statuses for specified site
@@ -166,11 +166,11 @@ latest([{site, Site}, {count, Count}]) ->
 %%--------------------------------------------------------------------
 language(Language) ->      
     Dictionary = webgnosus_dictionary_model:load_dictionary(Language),
-    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), is_language(S, Dictionary)])).
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), in_dictionary(S, Dictionary)])).
 
 not_language(Language) ->      
     Dictionary = webgnosus_dictionary_model:load_dictionary(Language),
-    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), is_not_language(S, Dictionary)])).
+    webgnosus_dbi:q(qlc:q([S || S <- mnesia:table(laconica_statuses), not in_dictionary(S, Dictionary)])).
     
 %%--------------------------------------------------------------------
 %% Func: count/0
@@ -253,17 +253,14 @@ tokenize(#laconica_statuses{text = S}) ->
 %% Description: tokenize status text and resolve redirected URLs
 %%--------------------------------------------------------------------
 prepare(#laconica_statuses{text = S}) ->
-  laconica_text:tokenize(webgnosus_text:to_lower(S)).
+  laconica_text:prepare(webgnosus_text:to_lower(S)).
 
 %%--------------------------------------------------------------------
-%% Func: is_language/1
+%% Func: in_dictionary/1
 %% Description: return true if status is in specified language
 %%--------------------------------------------------------------------
-is_language(#laconica_statuses{text = S}, Dictionary) ->
-   laconica_text:is_language(webgnosus_text:to_lower(S), Dictionary).
-
-is_not_language(#laconica_statuses{text = S}, Dictionary) ->
-   laconica_text:is_not_language(webgnosus_text:to_lower(S), Dictionary).
+in_dictionary(#laconica_statuses{text = S}, Dictionary) ->
+   laconica_text:in_dictionary(webgnosus_text:to_lower(S), Dictionary).
 
 %%--------------------------------------------------------------------
 %% Func: count_words
@@ -282,9 +279,11 @@ count_words() ->
 % count words for specified status message and language Dictionary
 count_words(#laconica_statuses{text = S}, Dictionary) ->
     LcS = webgnosus_text:to_lower(S),
-    case is_language(LcS, Dictionary) of 
+    case laconica_text:in_dictionary(LcS, Dictionary) of 
         true ->
-            webgnosus_word_model:count_words(tokenize_and_resolve_urls(LcS));
+            webgnosus_word_model:count_words(
+                tokenize(
+                    webgnosus_text:replace_shortened_urls(LcS)));
         false ->
             void
     end.

@@ -8,7 +8,8 @@
           prepare/1,
           tokenize/1,
           to_lower/1,
-          is_ascii/1
+          is_ascii/1,
+          replace_shortened_urls/1
         ]).
 
 %%====================================================================
@@ -27,9 +28,9 @@ tokenize(Doc) ->
 %%--------------------------------------------------------------------
 prepare(Doc) ->
     pad_punctuation(
-        pad_internal_period(
-            pad_terminating_period(
-                pad_single_quotes(
+        pad_periods(
+            pad_single_quotes(
+                pad_document(
                     remove_new_lines(
                         remove_smiley(Doc)))))).
 
@@ -51,6 +52,30 @@ is_ascii(Doc) ->
         end,
         Doc).
 
+%%--------------------------------------------------------------------
+%% Func: replace_shortened_urls/1
+%% Description: resolve shortened urls and replace with full url
+%%--------------------------------------------------------------------
+replace_shortened_urls(Doc) ->
+    case regexp:matches(Doc,  "http://[a-z,A-Z,0-9,\.\?/=&_\,\+,\-]+") of
+        {match, []} ->
+            Doc;
+        {match, Matches} ->
+            get_url_and_update_document(Matches, Doc);
+        _ -> 
+            Doc
+    end.
+
+get_url_and_update_document([], Doc) ->
+        Doc;
+
+get_url_and_update_document([{Position, Length} = M| Matches], Doc) ->
+    OldUrl = lists:sublist(Doc, Position, Length),
+    NewUrl = webgnosus_http:get_redirect_url(OldUrl),
+    get_url_and_update_document(
+        lists:map(fun({P,L}) -> {P + length(NewUrl) - length(OldUrl), L} end, Matches), 
+        webgnosus_util:replace_at_position(M, NewUrl, Doc)).
+
 %%====================================================================
 %%% Internal functions
 %%====================================================================
@@ -58,7 +83,7 @@ is_ascii(Doc) ->
 %% Func: pad_period/1
 %% Description: remove smileys from document
 %%--------------------------------------------------------------------
-pad_internal_period(Doc) ->    
+pad_periods(Doc) ->    
     case regexp:matches(Doc, "[0-9a-zA-Z]+\\.\\s") of
         {match, Matches} ->
             {Result, _} = lists:foldl(
@@ -68,15 +93,6 @@ pad_internal_period(Doc) ->
                 {Doc, 0},
                 Matches),
             Result;
-        _ -> 
-            Doc
-    end.
-
-%%--------------------------------------------------------------------
-pad_terminating_period(Doc) ->    
-    case regexp:match(Doc, "[0-9a-zA-Z]+\\.$") of
-        {match, _, _} ->
-            webgnosus_util:replace_at_position({length(Doc), 1}, " . ", Doc);
         _ -> 
             Doc
     end.
@@ -130,6 +146,13 @@ remove_smiley(S, Doc) ->
         _ -> 
             Doc
     end.
+
+%%--------------------------------------------------------------------
+%% Func: pad_document/1
+%% Description: pad document
+%%--------------------------------------------------------------------
+pad_document(Doc) ->   
+    lists:concat([" ", Doc, " "]).
 
 %%--------------------------------------------------------------------
 %% Func: pad_single_quotes/1
