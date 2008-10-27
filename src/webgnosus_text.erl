@@ -30,9 +30,10 @@ prepare(Doc) ->
     pad_punctuation(
         pad_periods(
             pad_single_quotes(
-                pad_document(
-                    remove_new_lines(
-                        remove_smiley(Doc)))))).
+                pad_quotes(
+                    pad_document(
+                        remove_new_lines(
+                            remove_smiley(Doc))))))).
 
 %%--------------------------------------------------------------------
 %% Func: prepare/1
@@ -93,6 +94,18 @@ pad_periods(Doc) ->
                 {Doc, 0},
                 Matches),
             Result;
+        _ -> 
+            Doc
+    end.
+
+%%--------------------------------------------------------------------
+%% Func: pad_quotes/1
+%% Description: pad quotes
+%%--------------------------------------------------------------------
+pad_quotes(Doc) ->    
+    case regexp:gsub(Doc, "\\\"", " \" ") of
+        {ok, NewDoc, _} ->
+            NewDoc;
         _ -> 
             Doc
     end.

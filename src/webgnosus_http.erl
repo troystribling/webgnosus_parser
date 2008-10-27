@@ -46,11 +46,40 @@ is_live_url(Url) ->
 %% Description: return redirect URL.
 %%--------------------------------------------------------------------
 get_redirect_url(Url) ->
-    case valid_url(Url) of
+    get_redirect_url(Url, 0).
+
+get_redirect_url(Url, Count) ->
+    if
+        Count < 5 ->
+            case valid_url(Url) of
+                true ->
+                    extract_redirect_url_from_header(Url, Count);
+                false ->
+                     Url
+            end;
         true ->
-            extract_redirect_url_from_header(Url);
-        false ->
-             Url
+            Url
+    end.
+
+extract_redirect_url_from_header(Url, Count) ->
+    HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}, {timeout, 15000}], []),
+    case HttpDoc of
+        {ok, {{_, 301 ,_}, Headers, _}} -> 
+            get_redirect_url(webgnosus_util:get_attribute("location", Headers), Count + 1);
+        {ok, {{_, 302 ,_}, Headers, _}} -> 
+            get_redirect_url(webgnosus_util:get_attribute("location", Headers), Count + 1);
+        {ok, {{_, 303 ,_}, Headers, _}} -> 
+            get_redirect_url(webgnosus_util:get_attribute("location", Headers), Count + 1);
+        _ -> 
+            Url
+    end.
+
+valid_url(Url) ->
+    case regexp:first_match(Url, "^http://$|\\s") of
+        {match, _, _} -> 
+            false;
+        _ -> 
+            lists:all(fun(X) -> X < 128 end, Url)
     end.
 
 %%--------------------------------------------------------------------
@@ -77,40 +106,4 @@ parse_xml(Document) ->
 %%====================================================================
 %%% Internal functions
 %%====================================================================
-%%--------------------------------------------------------------------
-%% Func: extract_redirect_url_from_header/1
-%% Description: return redirect URL.
-%%--------------------------------------------------------------------
-extract_redirect_url_from_header(Url) ->
-    extract_redirect_url_from_header(Url, 0).
-
-extract_redirect_url_from_header(Url, Count) ->
-    if
-        Count < 5 ->
-            HttpDoc = http:request(get, {Url, headers()}, [{autoredirect, false}, {timeout, 15000}], []),
-            case HttpDoc of
-                {ok, {{_, 301 ,_}, Headers, _}} -> 
-                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
-                {ok, {{_, 302 ,_}, Headers, _}} -> 
-                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
-                {ok, {{_, 303 ,_}, Headers, _}} -> 
-                    extract_redirect_url_from_header(webgnosus_util:get_attribute("location", Headers), Count + 1);
-                _ -> 
-                    Url
-            end;
-        true ->
-            Url
-    end.
-
-%%--------------------------------------------------------------------
-%% Func: valid_url/1
-%% Description: true if url is valid.
-%%--------------------------------------------------------------------
-valid_url(Url) ->
-    case regexp:first_match(Url, "^http://$") of
-        {match, _, _} -> 
-            false;
-        _ -> 
-            lists:all(fun(X) -> X < 128 end, Url)
-    end.
   
