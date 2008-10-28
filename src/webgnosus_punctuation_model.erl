@@ -55,7 +55,7 @@ clear_table() ->
 %% Description: load text dump of table
 %%--------------------------------------------------------------------
 load() ->
-    mnesia:load_textfile("webgnosus_punctuation.dat").
+    mnesia:load_textfile("data/webgnosus_punctuation.dat").
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods

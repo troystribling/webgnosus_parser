@@ -56,7 +56,7 @@ clear_table() ->
 %% Description: load text dump of table
 %%--------------------------------------------------------------------
 load() ->
-    mnesia:load_textfile("webgnosus_dictionary.dat").
+    mnesia:load_textfile("data/webgnosus_dictionary.dat").
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods
