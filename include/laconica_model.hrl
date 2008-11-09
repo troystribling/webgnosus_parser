@@ -56,3 +56,11 @@
         processed
     }
 ).
+
+%% laconica analysis control
+-record(laconica_analysis_control, 
+    {
+        last_status,
+        status_count
+    }
+).
