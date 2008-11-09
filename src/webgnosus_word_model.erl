@@ -77,7 +77,7 @@ write(_) ->
 
 %% return row count
 count() ->    
-    webgnosus_dbi:count(laconica_statuses).
+    webgnosus_dbi:count(webgnosus_words).
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
@@ -212,7 +212,6 @@ dump(File, [{word, RegExp}, {count, Count}]) ->
 %% Func: key/1
 %% Description: define model key
 %%--------------------------------------------------------------------
-%% find all models
 key(Word) ->
     Word.
 

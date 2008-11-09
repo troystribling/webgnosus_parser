@@ -95,7 +95,6 @@ count() ->
 %% Func: key/1
 %% Description: define model key
 %%--------------------------------------------------------------------
-%% find all models
 key(Url) ->
     Url.
 

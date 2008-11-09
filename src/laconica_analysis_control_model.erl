@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
-%%% model interface for laconica user
+%%% model interface for laconica analysis control database
 %%%-------------------------------------------------------------------
--module(laconica_user_model).
+-module(laconica_analysis_control_model).
 
 %% API
 -export([
@@ -12,7 +12,8 @@
           delete/1,
           find/1,
           count/0,
-          key/1
+          last_status/0,
+          status_count/0
        ]).
 
 %% include
@@ -29,21 +30,21 @@
 %% Description: create application database tables
 %%--------------------------------------------------------------------
 create_table() ->
-    webgnosus_dbi:create_table(laconica_users, [{attributes, record_info(fields, laconica_users)}, {disc_only_copies, [node()]}]).
+    webgnosus_dbi:create_table(laconica_analysis_control, [{attributes, record_info(fields, laconica_analysis_control)}, {disc_only_copies, [node()]}]).
 
 %%--------------------------------------------------------------------
 %% Func: delete_tables/0
 %% Description: delete application database tables
 %%--------------------------------------------------------------------
 delete_table() ->
-    webgnosus_dbi:delete_table(laconica_users).
+    webgnosus_dbi:delete_table(laconica_analysis_control).
 
 %%--------------------------------------------------------------------
 %% Func: clear_tables/0
 %% Description: delete all rows in application database tables
 %%--------------------------------------------------------------------
 clear_table() ->
-    webgnosus_dbi:clear_table(laconica_users).
+    webgnosus_dbi:clear_table(laconica_analysis_control).
 
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% generic row methods
@@ -52,43 +53,52 @@ clear_table() ->
 %% Func: write/1
 %% Description: write specified record to database
 %%--------------------------------------------------------------------
-write(R) when is_record(R, laconica_users) ->
+write(R) when is_record(R, laconica_analysis_control) ->
     webgnosus_dbi:write_row(R);
+
+write(R) when is_list(R) ->
+    webgnosus_dbi:write_row({laconica_analysis_control, 
+        webgnosus_util:get_attribute(last_status, R),
+        webgnosus_util:get_attribute(status_count, R)
+    });
+
 write(_) ->
     error.
+
+%% return row count
+count() ->    
+    webgnosus_dbi:count(laconica_analysis_control).
 
 %%--------------------------------------------------------------------
 %% Func: delete/1
 %% Description: delete specified record to database
 %%--------------------------------------------------------------------
-delete({UserId, SiteUrl}) ->
-    webgnosus_dbi:delete_row({laconica_users, {UserId, SiteUrl}}).
+delete(Key) ->
+    webgnosus_dbi:delete_row({laconica_analysis_control, Key}).
 
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% queries
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%--------------------------------------------------------------------
 %% Func: find/1
 %% Description: find models
 %%--------------------------------------------------------------------
 %% find all models
 find(all) ->
-    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_users)]));
+    webgnosus_dbi:q(qlc:q([X || X <- mnesia:table(laconica_analysis_control)])).
 
-%% find specified record to database
-find({UserId, SiteUrl}) ->
-    case webgnosus_dbi:read_row({laconica_users, {UserId, SiteUrl}}) of
-        [] ->
-            error;
-        Result ->
-            hd(Result)
-     end.
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% attributes
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+last_status(#laconica_analysis_control{last_status = Attr}) ->    
+    Attr.
 
-%%--------------------------------------------------------------------
-%% Func: count/0
-%% Description: return row count
-%%--------------------------------------------------------------------
-count() ->
-    webgnosus_dbi:count(laconica_users).
+status_count(#laconica_analysis_control{status_count = Attr}) ->    
+    Attr.
 
-
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+%% text analysis
+%%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 %% model row methods
 %%>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -96,8 +106,8 @@ count() ->
 %% Func: key/1
 %% Description: define model key
 %%--------------------------------------------------------------------
-key({UserId, SiteUrl}) ->
-    {UserId, SiteUrl}.
+key({StatusId, UserId, SiteUrl}) ->
+    {StatusId, UserId, SiteUrl}.
 
 %%====================================================================
 %%% Internal functions

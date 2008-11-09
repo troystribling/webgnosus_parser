@@ -199,7 +199,6 @@ count({site, Site}) ->
 %% Func: key/1
 %% Description: define model key
 %%--------------------------------------------------------------------
-%% model key
 key({StatusId, UserId, SiteUrl}) ->
     {StatusId, UserId, SiteUrl}.
 
