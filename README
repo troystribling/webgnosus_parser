@@ -9,4 +9,4 @@ To add laconi.ca sites use
   laconica_server:open_session(Url, PollFrequency)
 
 
-data/pos_output_english-1.dat contains tagged corpus of about 70K messages. Tag symbols are from Penn Treebank Tag Set. data pos_input-english-1.dat contains proccesed messages used as input to pos tagger.
+data/pos_output_english-1.dat contains tagged corpus of about 70K messages. Tag symbols are from Penn Treebank Tag Set. data/pos_input-english-1.dat contains proccesed messages used as input to pos tagger.
