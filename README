@@ -1,0 +1,12 @@
+webgnosus_parser is an Erlang implementation of a laconi.ca (http://laconi.ca) message parser. laconi.ca is an open source microblogging platform. webgnosus_parser polls the public timeline of specified locaoni.ca sites constructing user and message databases. The messages are then parsed and parts of speech are tagged using a Hidden Markov. Erlang modules are provided for both training and operational tagging. The intent in the future is to use POS message tagging to perform message topic tagging.
+
+To compile and start collector
+  
+  rake :collect 
+
+To add laconi.ca sites use
+
+  laconica_server:open_session(Url, PollFrequency)
+
+
+data/pos_output_english-1.dat contains tagged corpus of about 70K messages. Tag symbols are from Penn Treebank Tag set. data pos_input-english-1.dat contains proccesed messages used as input to pos tagger.
